@@ -82,7 +82,7 @@ def test_to_asciidoc(tmp_path):
         ====== hw_set_bits
 
         `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,__force_inline>> void hw_set_bits (io_rw_32 ++*++addr, +
-        {nbsp}{nbsp}{nbsp}{nbsp}{nbsp}{nbsp} uint32_t mask)`
+        {nbsp}{nbsp}{nbsp}{nbsp}{nbsp}{nbsp} uint32_t mask) [static]`
 
         Atomically set the specified bits to 1 in a HW register.
 

@@ -894,6 +894,14 @@ class FunctionMemberdefNode(Node):
                     self.node.find("argsstring", recursive=False).get_text(strip=True)
                 ).replace(",", ", +\n{nbsp}{nbsp}{nbsp}{nbsp}{nbsp}{nbsp}")
             )
+        suffix = []
+        if self.node["inline"] == "yes":
+            suffix.append("[inline]")
+        if self.node["static"] == "yes":
+            suffix.append("[static]")
+        if suffix:
+            definition.append(" ")
+            definition.append(", ".join(suffix))
         definition.append("`")
         output.append("".join(definition))
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
