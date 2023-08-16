@@ -1042,14 +1042,35 @@ class DefineMemberdefNode(Node):
                 )
             )
         ]
-        macro = [
-            f"`#define {escape_text(self.node.find('name', recursive=False).get_text(strip=True))}"
+        name = self.node.find("name", recursive=False).get_text(strip=True)
+        params = [
+            param.get_text(strip=True) for param in self.node("param", recursive=False)
         ]
-        if self.node.initializer:
-            macro.append(f" {escape_text(self.node.initializer.get_text(strip=True))}`")
+        if params:
+            argsstring = f"({', '.join(params)})"
         else:
-            macro.append("`")
-        output.append("".join(macro))
+            argsstring = ""
+        if self.node.initializer:
+            initializer = Node(self.node.initializer, xmldir=self.xmldir).to_asciidoc(
+                programlisting=True
+            )
+            if "\n" in initializer:
+                output.append(
+                    "\n".join(
+                        (
+                            "[source,c]",
+                            "----",
+                            f"#define {name}{argsstring} {initializer.lstrip()}",
+                            "----",
+                        )
+                    )
+                )
+            else:
+                output.append(
+                    f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer)}`"
+                )
+        else:
+            output.append(f"`#define {escape_text(name)}{escape_text(argsstring)}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = Node(
@@ -1163,13 +1184,25 @@ class DefineSectiondefNode(Node):
         output = [title("Macros", 4 + kwargs.get("depth", 0))]
         macros = []
         for memberdef in self.node("memberdef", kind="define"):
+            params = [
+                param.get_text(strip=True)
+                for param in memberdef("param", recursive=False)
+            ]
+            if params:
+                argsstring = f"({', '.join(params)})"
+            else:
+                argsstring = ""
             macro = [
-                f"* `#define <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>"
+                f"* `#define <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>{escape_text(argsstring)}"
             ]
             if memberdef.initializer:
-                macro.append(
-                    f" {escape_text(memberdef.find('initializer', recursive=False).get_text(strip=True))}`"
-                )
+                initializer = Node(
+                    memberdef.initializer, xmldir=self.xmldir
+                ).to_asciidoc(programlisting=True)
+                if "\n" not in initializer:
+                    macro.append(f" {escape_text(initializer)}`")
+                else:
+                    macro.append("`")
             else:
                 macro.append("`")
             macros.append("".join(macro))

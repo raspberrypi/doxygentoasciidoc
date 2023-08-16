@@ -3,11 +3,12 @@ import re
 
 def escape_text(text):
     """Escape text so it is safe for use in AsciiDoc."""
-    return (
+    return re.sub(
+        r"\(\((.+)\)\)",
+        r"\((\1))",
         re.sub(r"\b(__\w+)", r"++\1++", str(text))
         .replace("*", "++*++")
-        .replace(" \\\n", " ")
-        .replace("((", "\\((")
+        .replace(" \\\n", " "),
     )
 
 
