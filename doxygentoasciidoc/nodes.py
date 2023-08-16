@@ -888,12 +888,16 @@ class FunctionMemberdefNode(Node):
         definition.append(
             f" {self.node.find('name', recursive=False).get_text(strip=True)} "
         )
-        if self.node.find("argsstring", recursive=False) is not None:
-            definition.append(
-                escape_text(
-                    self.node.find("argsstring", recursive=False).get_text(strip=True)
-                ).replace(",", ", +\n{nbsp}{nbsp}{nbsp}{nbsp}{nbsp}{nbsp}")
-            )
+        params = self.node("param", recursive=False)
+        if params:
+            args = []
+            for param in params:
+                arg = []
+                arg.append(Node(param.type, xmldir=self.xmldir).to_asciidoc())
+                if param.declname:
+                    arg.append(escape_text(param.declname.get_text(strip=True)))
+                args.append(" ".join(arg))
+            definition.append(f"({', '.join(args)})")
         suffix = []
         if self.node["inline"] == "yes":
             suffix.append("[inline]")
