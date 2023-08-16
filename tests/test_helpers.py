@@ -25,6 +25,10 @@ def test_escape_text_does_not_escape_unbalanced_double_parentheses():
     assert escape_text("((hello)-1)") == "((hello)-1)"
 
 
+def test_escape_text_escapes_arrows():
+    assert escape_text("->") == "\\->"
+
+
 def test_sanitize_replaces_multiple_leading_underscores():
     assert sanitize("___foo__bar") == "_foo_bar"
 

@@ -8,7 +8,8 @@ def escape_text(text):
         r"\((\1))",
         re.sub(r"\b(__\w+)", r"++\1++", str(text))
         .replace("*", "++*++")
-        .replace(" \\\n", " "),
+        .replace(" \\\n", " ")
+        .replace("->", "\\->"),
     )
 
 
