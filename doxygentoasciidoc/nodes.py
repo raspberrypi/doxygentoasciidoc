@@ -38,6 +38,13 @@ class Node:
         self.position = position
         self.xmldir = xmldir
 
+    @property
+    def id(self):
+        return sanitize(self.node["id"])
+
+    def __getitem__(self, item):
+        return self.node[item]
+
     def to_asciidoc(self, **kwargs):
         """Return an AsciiDoc representation of this node.
 
@@ -60,6 +67,9 @@ class Node:
                 if kwargs.get("programlisting", False):
                     return str(self.node)
 
+                # 1. Remove whitespace around a line break
+                # 2. Convert line breaks to spaces
+                # 3. Ignore spaces immediately following another space
                 stripped = re.sub(
                     r"\s{2,}",
                     " ",
@@ -67,6 +77,7 @@ class Node:
                         "\n", " "
                     ),
                 )
+                # 4. Sequences of spaces at the beginning and end of an element are removed
                 if self.position == 0:
                     stripped = stripped.lstrip()
                 if (
@@ -79,23 +90,27 @@ class Node:
             return ""
 
         if self.isblockcontext():
+            # Because we're inside a block formatting context, everything must be a block
+            # including any text nodes.
             para = None
             children = self.node.contents[:]
             for child in children:
                 if child.name not in self.BLOCK_LEVEL_NODES:
-                    # Move inline elements into a new block
+                    # Wrap contiguous inline elements into a block
                     if para:
-                        # If there is already a wrapper, append this to it
+                        # If there is already a wrapper, add this inline
+                        # element to it
                         para.append(child)
                     else:
-                        # If there isn't already a wrapper, make one
+                        # If there isn't already a wrapper, start one by
+                        # wrapping this element in a <para>
                         para = child.wrap(self.soup().new_tag("para"))
                 elif para and para.get_text(strip=True):
                     # If there is a wrapper and it isn't empty, prepend it before this block
                     child.insert_before(para)
                     para = None
             if para:
-                # Append any remaining lifted inline elements at the end
+                # Append any remaining wrapped inline elements at the end
                 self.node.append(para)
 
             # Combine any adjacent text nodes since we modified the tree
@@ -123,35 +138,96 @@ class Node:
         return any(child.name in self.BLOCK_LEVEL_NODES for child in self.node.children)
 
     def asciidoc_contents(self, **kwargs):
-        """Return a generator of the AsciiDoc contents of this node."""
-        return (child.to_asciidoc(**kwargs) for child in self.children())
+        """Return a list of the AsciiDoc contents of this node."""
+        return [child.to_asciidoc(**kwargs) for child in self.children()]
 
-    def children(self):
-        """Return a generator of the child Nodes of this node."""
-        return (
-            self.mapping()[child.name](child, position=position, xmldir=self.xmldir)
-            for position, child in enumerate(self.node.children)
-        )
+    def child(self, selector):
+        child = self.node.find(selector, recursive=False)
+        if not child:
+            return None
+        return self.nodefor(child)(child, xmldir=self.xmldir)
 
-    @property
+    def children(self, selector=None, **kwargs):
+        """Return a list of the child Nodes of this node.
+
+        Takes an optional selector to only return certain child elements."""
+        if selector:
+            children = self.node(selector, recursive=False, **kwargs)
+        else:
+            children = self.node.children
+
+        return [
+            self.nodefor(child)(child, position=position, xmldir=self.xmldir)
+            for position, child in enumerate(children)
+        ]
+
+    def descendants(self, selector, **kwargs):
+        """Return a list of descendant Nodes matching the given selector."""
+        return [
+            self.nodefor(child)(child, position=position, xmldir=self.xmldir)
+            for position, child in enumerate(
+                self.node(selector, recursive=True, **kwargs)
+            )
+        ]
+
+    def text(self, selector=None):
+        """Return the stripped text of the given child."""
+        if not selector:
+            return self.node.get_text(strip=True)
+
+        child = self.node.find(selector, recursive=False)
+        if not child:
+            return None
+
+        return child.get_text(strip=True)
+
     def previous_node(self):
         """Return the previous sibling element to this Node, skipping text nodes."""
         return next((node for node in self.node.previous_siblings if node.name), None)
 
-    @property
     def next_node(self):
         """Return the next sibling element to this Node, skipping text nodes."""
         return next((node for node in self.node.next_siblings if node.name), None)
 
-    def mapping(self):
-        """Return a mapping of element names to Node subclasses."""
+    def nodefor(self, element):
+        """Return the appropriate Node class for a given element."""
+        if element.name == "compounddef":
+            return {
+                "group": GroupNode,
+                "struct": DataStructureNode,
+            }[element["kind"]]
+
+        if element.name == "sectiondef":
+            return {
+                "define": DefineSectiondefNode,
+                "enum": EnumSectiondefNode,
+                "typedef": TypedefSectiondefNode,
+                "func": FunctionSectiondefNode,
+            }[element["kind"]]
+
+        if element.name == "memberdef":
+            return {
+                "define": DefineMemberdefNode,
+                "enum": EnumMemberdefNode,
+                "typedef": TypedefMemberdefNode,
+                "function": FunctionMemberdefNode,
+                "variable": VariableMemberdefNode,
+            }[element["kind"]]
+
         return {
             "bold": BoldNode,
+            "briefdescription": Node,
+            "detaileddescription": DetaileddescriptionNode,
             "codeline": CodelineNode,
+            "compound": Node,
             "computeroutput": ComputeroutputNode,
             "emphasis": EmphasisNode,
             "entry": EntryNode,
+            "enumvalue": Node,
             "highlight": Node,
+            "initializer": Node,
+            "innergroup": InnergroupNode,
+            "innerclass": InnerclassNode,
             "itemizedlist": ItemizedlistNode,
             "listitem": ListitemNode,
             "mdash": MdashNode,
@@ -159,6 +235,7 @@ class Node:
             "nonbreakablespace": NonbreakablespaceNode,
             "orderedlist": OrderedlistNode,
             "para": Node,
+            "param": Node,
             "parameterdescription": ParameterdescriptionNode,
             "parameteritem": Node,
             "parameterlist": ParameterlistNode,
@@ -173,10 +250,11 @@ class Node:
             "sp": SpNode,
             "table": TableNode,
             "title": TitleNode,
+            "type": Node,
             "ulink": UlinkNode,
             "verbatim": VerbatimNode,
             None: Node,
-        }
+        }[element.name]
 
 
 class DoxygenindexNode(Node):
@@ -185,15 +263,18 @@ class DoxygenindexNode(Node):
     def to_asciidoc(self, **kwargs):
         output = []
         for module in self.rootmodules():
+            title_ = module.node.text("title")
             output.append(
                 "\n".join(
                     (
-                        f"[[{sanitize(module.refid)},{escape_text(module.node.title)}]]",
-                        title(module.node.title, 2),
+                        f"[[{sanitize(module.refid)},{escape_text(title_)}]]",
+                        title(title_, 2),
                     )
                 )
             )
-            briefdescription = module.node.briefdescription
+            briefdescription = module.node.child("briefdescription").to_asciidoc(
+                **kwargs
+            )
             if briefdescription:
                 output.append(briefdescription)
             table = ['[cols="1,4"]', "|==="]
@@ -202,7 +283,9 @@ class DoxygenindexNode(Node):
             table.append("|===")
             if len(table) > 3:
                 output.append("\n".join(table))
-            detaileddescription = module.node.detaileddescription
+            detaileddescription = module.node.child("detaileddescription").to_asciidoc(
+                documentation=True, **kwargs
+            )
             if detaileddescription:
                 output.append(detaileddescription)
             for child in module.children:
@@ -226,20 +309,20 @@ class DoxygenindexNode(Node):
         hierarchy in memory before returning only the root nodes."""
         groups = {}
 
-        for compound in self.node("compound", kind="group", recursive=False):
+        for compound in self.children("compound", kind="group"):
             with open(
                 f'{self.xmldir}/{compound["refid"]}.xml', encoding="utf-8"
             ) as compoundxml:
-                doxygenroot = BeautifulSoup(compoundxml, "xml").doxygen
-            for compounddef in doxygenroot(
-                "compounddef", kind="group", recursive=False
-            ):
+                doxygenroot = Node(
+                    BeautifulSoup(compoundxml, "xml").doxygen, xmldir=self.xmldir
+                )
+            for compounddef in doxygenroot.children("compounddef", kind="group"):
                 group = groups.setdefault(
                     compounddef["id"], self.Group(compounddef["id"])
                 )
-                group.node = GroupNode(compounddef, xmldir=self.xmldir)
+                group.node = compounddef
 
-                for innergroup in compounddef("innergroup", recursive=False):
+                for innergroup in compounddef.children("innergroup"):
                     child = groups.setdefault(
                         innergroup["refid"], self.Group(innergroup["refid"])
                     )
@@ -251,17 +334,15 @@ class DoxygenindexNode(Node):
     def datastructures(self):
         """Return a list of data structures from the Doxygen index."""
         datastructures = []
-        for compound in self.node("compound", kind="struct", recursive=False):
+        for compound in self.children("compound", kind="struct"):
             with open(
                 f'{self.xmldir}/{compound["refid"]}.xml', encoding="utf-8"
             ) as compoundxml:
-                doxygenroot = BeautifulSoup(compoundxml, "xml").doxygen
-            for compounddef in doxygenroot(
-                "compounddef", kind="struct", recursive=False
-            ):
-                datastructures.append(
-                    DataStructureNode(compounddef, xmldir=self.xmldir)
+                doxygenroot = Node(
+                    BeautifulSoup(compoundxml, "xml").doxygen, xmldir=self.xmldir
                 )
+            for compounddef in doxygenroot.children("compounddef", kind="struct"):
+                datastructures.append(compounddef)
         return datastructures
 
     class Group:
@@ -285,10 +366,10 @@ class DoxygenindexNode(Node):
 
         def to_asciidoc_row(self, depth=0):
             indent = "{nbsp}" * 4 * depth
-            briefdescription = self.node.briefdescription
+            briefdescription = self.node.child("briefdescription").to_asciidoc()
             output = []
             row = (
-                f"|{indent}<<{sanitize(self.refid)},{escape_text(self.node.title)}>>",
+                f"|{indent}<<{sanitize(self.refid)},{escape_text(self.node.text('title'))}>>",
                 f"|{briefdescription}",
             )
             output.append("\n".join(row))
@@ -345,83 +426,66 @@ class GroupNode(Node):
         return "\n\n".join(output)
 
     def __output_title(self, **kwargs):
+        title_ = self.text("title")
         return "\n".join(
             (
-                f"[[{self.sanitized_id},{self.title}]]",
-                title(self.title, 3 + kwargs.get("depth", 0)),
+                f"[[{self.id},{title_}]]",
+                title(title_, 3 + kwargs.get("depth", 0)),
             )
         )
 
     def __output_briefdescription(self, **kwargs):
         kwargs["depth"] = 2 + kwargs.get("depth", 0)
-        return Node(self.node.find("briefdescription", recursive=False)).to_asciidoc(
-            **kwargs
-        )
+        return self.child("briefdescription").to_asciidoc(**kwargs)
 
     def __output_detaileddescription(self, **kwargs):
         kwargs["depth"] = 2 + kwargs.get("depth", 0)
-        return DetaileddescriptionNode(
-            self.node.find("detaileddescription", recursive=False)
-        ).to_asciidoc(**kwargs)
+        return self.child("detaileddescription").to_asciidoc(**kwargs)
 
     def __list_modules(self, **kwargs):
-        innergroups = self.node("innergroup", recursive=False)
+        innergroups = self.children("innergroup")
         if not innergroups:
             return ""
 
         output = [title("Modules", 4 + kwargs.get("depth", 0))]
         modules = []
         for innergroup in innergroups:
-            modules.append(
-                InnergroupNode(innergroup, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+            modules.append(innergroup.to_asciidoc(**kwargs))
         output.append("\n".join(modules))
         return "\n\n".join(output)
 
     def __list_data_structures(self, **kwargs):
-        innerclasses = self.node("innerclass", recursive=False)
+        innerclasses = self.children("innerclass")
         if not innerclasses:
             return ""
 
         output = [title("Data Structures", 4 + kwargs.get("depth", 0))]
         datastructures = []
         for innerclass in innerclasses:
-            datastructures.append(
-                InnerclassNode(innerclass, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+            datastructures.append(innerclass.to_asciidoc(**kwargs))
         output.append("\n".join(datastructures))
         return "\n\n".join(output)
 
     def __list_macros(self, **kwargs):
         output = []
-        for sectiondef in self.node("sectiondef", kind="define", recursive=False):
-            output.append(
-                DefineSectiondefNode(sectiondef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+        for sectiondef in self.children("sectiondef", kind="define"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_enums(self, **kwargs):
         output = []
-        for sectiondef in self.node("sectiondef", kind="enum", recursive=False):
-            output.append(
-                EnumSectiondefNode(sectiondef, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+        for sectiondef in self.children("sectiondef", kind="enum"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_typedefs(self, **kwargs):
         output = []
-        for sectiondef in self.node("sectiondef", kind="typedef", recursive=False):
-            output.append(
-                TypedefSectiondefNode(sectiondef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+        for sectiondef in self.children("sectiondef", kind="typedef"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_variables(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="variable")
+        memberdefs = self.descendants("memberdef", kind="variable")
         if not memberdefs:
             return ""
 
@@ -429,17 +493,11 @@ class GroupNode(Node):
         variables = []
         for memberdef in memberdefs:
             variable = ["`"]
+            variable.append(memberdef.child("type").to_asciidoc(**kwargs))
             variable.append(
-                Node(
-                    memberdef.find("type", recursive=False), xmldir=self.xmldir
-                ).to_asciidoc(**kwargs)
+                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>>`:: "
             )
-            variable.append(
-                f" <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>`:: "
-            )
-            briefdescription = Node(
-                memberdef.briefdescription, xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
+            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 variable.append(briefdescription)
             else:
@@ -450,113 +508,70 @@ class GroupNode(Node):
 
     def __list_functions(self, **kwargs):
         output = []
-        for sectiondef in self.node("sectiondef", kind="func", recursive=False):
-            output.append(
-                FunctionSectiondefNode(sectiondef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+        for sectiondef in self.children("sectiondef", kind="func"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_typedef_details(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="typedef")
+        memberdefs = self.descendants("memberdef", kind="typedef")
         if not memberdefs:
             return ""
         output = [title("Typedef Documentation", 4 + kwargs.get("depth", 0))]
         typedefs = []
         for memberdef in memberdefs:
-            typedefs.append(
-                TypedefMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+            typedefs.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(typedefs))
         return "\n\n".join(output)
 
     def __list_function_details(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="function")
+        memberdefs = self.descendants("memberdef", kind="function")
         if not memberdefs:
             return ""
 
         output = [title("Function Documentation", 4 + kwargs.get("depth", 0))]
         functions = []
         for memberdef in sorted(
-            memberdefs,
-            key=lambda memberdef: memberdef.find("name", recursive=False).get_text(
-                strip=True
-            ),
+            memberdefs, key=lambda memberdef: memberdef.text("name")
         ):
-            functions.append(
-                FunctionMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+            functions.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n\n".join(functions))
         return "\n\n".join(output)
 
     def __list_enum_details(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="enum")
+        memberdefs = self.descendants("memberdef", kind="enum")
         if not memberdefs:
             return ""
 
         output = [title("Enumeration Type Documentation", 4 + kwargs.get("depth", 0))]
         enums = []
         for memberdef in memberdefs:
-            enums.append(
-                EnumMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+            enums.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(enums))
         return "\n\n".join(output)
 
     def __list_variable_details(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="variable")
+        memberdefs = self.descendants("memberdef", kind="variable")
         if not memberdefs:
             return ""
 
         output = [title("Variable Documentation", 4 + kwargs.get("depth", 0))]
         variables = []
         for memberdef in memberdefs:
-            variables.append(
-                VariableMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(
-                    **kwargs
-                )
-            )
+            variables.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(variables))
         return "\n\n".join(output)
 
     def __list_macro_details(self, **kwargs):
-        memberdefs = self.node("memberdef", kind="define")
+        memberdefs = self.descendants("memberdef", kind="define")
         if not memberdefs:
             return ""
 
         output = [title("Macro Definition Documentation", 4 + kwargs.get("depth", 0))]
         macros = []
         for memberdef in memberdefs:
-            macros.append(
-                DefineMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+            macros.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(macros))
         return "\n\n".join(output)
-
-    @property
-    def briefdescription(self):
-        return Node(
-            self.node.find("briefdescription", recursive=False), xmldir=self.xmldir
-        ).to_asciidoc()
-
-    @property
-    def detaileddescription(self):
-        return Node(
-            self.node.find("detaileddescription", recursive=False), xmldir=self.xmldir
-        ).to_asciidoc()
-
-    @property
-    def sanitized_id(self):
-        return sanitize(self.node["id"])
-
-    @property
-    def title(self):
-        return self.node.find("title", recursive=False).get_text(strip=True)
 
 
 class DataStructureNode(Node):
@@ -564,38 +579,28 @@ class DataStructureNode(Node):
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
+                    f"[#{self.id}]",
                     title(
-                        self.node.find("compoundname", recursive=False).get_text(
-                            strip=True
-                        ),
+                        self.text("compoundname"),
                         3 + kwargs.get("depth", 0),
                     ),
                 )
             )
         ]
-        briefdescription = Node(
-            self.node.find("briefdescription", recursive=False),
-            xmldir=self.xmldir,
-        ).to_asciidoc()
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
         if briefdescription:
             output.append(briefdescription)
-        detaileddescription = Node(
-            self.node.find("detaileddescription", recursive=False),
-            xmldir=self.xmldir,
-        ).to_asciidoc()
+        detaileddescription = self.child("detaileddescription").to_asciidoc(
+            documentation=True, **kwargs
+        )
         if detaileddescription:
             output.append(detaileddescription)
-        memberdefs = self.node("memberdef", kind="variable")
+        memberdefs = self.descendants("memberdef", kind="variable")
         if memberdefs:
             output.append(title("Variable Documentation", 4 + kwargs.get("depth", 0)))
             variables = []
             for memberdef in memberdefs:
-                variables.append(
-                    VariableMemberdefNode(memberdef, xmldir=self.xmldir).to_asciidoc(
-                        **kwargs
-                    )
-                )
+                variables.append(memberdef.to_asciidoc(**kwargs))
             output.append("\n\n".join(variables))
         return "\n\n".join(output)
 
@@ -605,14 +610,15 @@ class InnergroupNode(Node):
         with open(
             f"{self.xmldir}/{self.node['refid']}.xml", encoding="utf-8"
         ) as compoundxml:
-            compounddef = BeautifulSoup(compoundxml, "xml").compounddef
+            compounddef = Node(
+                BeautifulSoup(compoundxml, "xml").compounddef, xmldir=self.xmldir
+            )
             output = [
-                f"<<{sanitize(compounddef['id'])},{escape_text(compounddef.find('title', recursive=False).get_text(strip=True))}>>::"
+                f"<<{compounddef.id},{escape_text(compounddef.text('title'))}>>::"
             ]
-            briefdescription = Node(
-                compounddef.find("briefdescription", recursive=False),
-                xmldir=self.xmldir,
-            ).to_asciidoc(**kwargs)
+            briefdescription = compounddef.child("briefdescription").to_asciidoc(
+                **kwargs
+            )
             if briefdescription:
                 output.append(briefdescription)
             else:
@@ -625,14 +631,15 @@ class InnerclassNode(Node):
         with open(
             f"{self.xmldir}/{self.node['refid']}.xml", encoding="utf-8"
         ) as compoundxml:
-            compounddef = BeautifulSoup(compoundxml, "xml").compounddef
+            compounddef = Node(
+                BeautifulSoup(compoundxml, "xml").compounddef, xmldir=self.xmldir
+            )
             output = [
-                f"struct <<{sanitize(compounddef['id'])},{escape_text(compounddef.find('compoundname', recursive=False).get_text(strip=True))}>>::"
+                f"struct <<{compounddef.id},{escape_text(compounddef.text('compoundname'))}>>::"
             ]
-            briefdescription = Node(
-                compounddef.find("briefdescription", recursive=False),
-                xmldir=self.xmldir,
-            ).to_asciidoc(**kwargs)
+            briefdescription = compounddef.child("briefdescription").to_asciidoc(
+                **kwargs
+            )
             if briefdescription:
                 output.append(briefdescription)
             else:
@@ -646,10 +653,8 @@ class ProgramlistingNode(Node):
         if "filename" in self.node.attrs:
             output.append(f"// {self.node['filename']}")
         output.append("[source,c,linenums]\n----")
-        for codeline in self.node("codeline", recursive=False):
-            output.append(
-                CodelineNode(codeline, xmldir=self.xmldir).to_asciidoc(**kwargs)
-            )
+        for codeline in self.children("codeline"):
+            output.append(codeline.to_asciidoc(**kwargs))
         output.append("----")
         return "\n".join(output)
 
@@ -693,9 +698,7 @@ class NonbreakablespaceNode(Node):
 
 class SectNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "\n".join(
-            (f"[#{sanitize(self.node['id'])}]", super().to_asciidoc(**kwargs))
-        )
+        return "\n".join((f"[#{self.id}]", super().to_asciidoc(**kwargs)))
 
 
 class TitleNode(Node):
@@ -705,19 +708,21 @@ class TitleNode(Node):
 
 class SimplesectNode(Node):
     def to_asciidoc(self, **kwargs):
+        previous_node = self.previous_node()
+        next_node = self.next_node()
         if self.node["kind"] == "see":
             output = []
             if not (
-                self.previous_node
-                and self.previous_node.name == "simplesect"
-                and self.previous_node["kind"] == "see"
+                previous_node
+                and previous_node.name == "simplesect"
+                and previous_node["kind"] == "see"
             ):
                 output.append("--\n*See also*\n\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
-                self.next_node
-                and self.next_node.name == "simplesect"
-                and self.next_node["kind"] == "see"
+                next_node
+                and next_node.name == "simplesect"
+                and next_node["kind"] == "see"
             ):
                 output.append("\n--")
             return "".join(output)
@@ -728,16 +733,16 @@ class SimplesectNode(Node):
         if self.node["kind"] == "note":
             output = []
             if not (
-                self.previous_node
-                and self.previous_node.name == "simplesect"
-                and self.previous_node["kind"] == "note"
+                previous_node
+                and previous_node.name == "simplesect"
+                and previous_node["kind"] == "note"
             ):
                 output.append("[NOTE]\n====\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
-                self.next_node
-                and self.next_node.name == "simplesect"
-                and self.next_node["kind"] == "note"
+                next_node
+                and next_node.name == "simplesect"
+                and next_node["kind"] == "note"
             ):
                 output.append("\n====")
 
@@ -765,7 +770,7 @@ class ParameterlistNode(Node):
 
 class ParameternamelistNode(Node):
     def to_asciidoc(self, **kwargs):
-        return f"`{escape_text(self.node.parametername.get_text(strip=True))}`::"
+        return f"`{escape_text(self.text('parametername'))}`::"
 
 
 class ParameterdescriptionNode(Node):
@@ -782,7 +787,7 @@ class RefNode(Node):
         if kwargs.get("programlisting", False):
             return super().to_asciidoc(**kwargs)
 
-        return f"<<{self.refid},{self.node.string}>>"
+        return f"<<{self.refid},{escape_text(self.text())}>>"
 
     @property
     def refid(self):
@@ -868,9 +873,9 @@ class FunctionMemberdefNode(Node):
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
+                    f"[#{self.id}]",
                     title(
-                        self.node.find("name", recursive=False).string,
+                        self.text("name"),
                         5 + kwargs.get("depth", 0),
                     ),
                 )
@@ -880,22 +885,17 @@ class FunctionMemberdefNode(Node):
             definition = ["`static "]
         else:
             definition = ["`"]
-        definition.append(
-            Node(
-                self.node.find("type", recursive=False), xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
-        )
-        definition.append(
-            f" {self.node.find('name', recursive=False).get_text(strip=True)} "
-        )
-        params = self.node("param", recursive=False)
+        definition.append(self.child("type").to_asciidoc(**kwargs))
+        definition.append(f" {escape_text(self.text('name'))} ")
+        params = self.children("param")
         if params:
             args = []
             for param in params:
                 arg = []
-                arg.append(Node(param.type, xmldir=self.xmldir).to_asciidoc())
-                if param.declname:
-                    arg.append(escape_text(param.declname.get_text(strip=True)))
+                arg.append(param.child("type").to_asciidoc(**kwargs))
+                declname = param.text("declname")
+                if declname:
+                    arg.append(escape_text(declname))
                 args.append(" ".join(arg))
             definition.append(f"({', '.join(args)})")
         suffix = []
@@ -910,14 +910,10 @@ class FunctionMemberdefNode(Node):
         output.append("".join(definition))
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
-        briefdescription = Node(
-            self.node.briefdescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
         if briefdescription:
             output.append(briefdescription)
-        detaileddescription = DetaileddescriptionNode(
-            self.node.detaileddescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        detaileddescription = self.child("detaileddescription").to_asciidoc(**kwargs)
         if detaileddescription:
             output.append(detaileddescription)
         return "\n\n".join(output)
@@ -928,25 +924,21 @@ class TypedefMemberdefNode(Node):
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
+                    f"[#{self.id}]",
                     title(
-                        self.node.find("name", recursive=False).string,
+                        self.text("name"),
                         5 + kwargs.get("depth", 0),
                     ),
                 )
             )
         ]
-        output.append(f"`{escape_text(self.node.definition.get_text(strip=True))}`")
+        output.append(f"`{escape_text(self.text('definition'))}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
-        briefdescription = Node(
-            self.node.briefdescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
         if briefdescription:
             output.append(briefdescription)
-        detaileddescription = DetaileddescriptionNode(
-            self.node.detaileddescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        detaileddescription = self.child("detaileddescription").to_asciidoc(**kwargs)
         if detaileddescription:
             output.append(detaileddescription)
         return "\n\n".join(output)
@@ -957,34 +949,27 @@ class EnumMemberdefNode(Node):
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
+                    f"[#{self.id}]",
                     title(
-                        self.node.find("name", recursive=False).string,
+                        self.text("name"),
                         5 + kwargs.get("depth", 0),
                     ),
                 )
             )
         ]
-        output.append(
-            f"`enum {escape_text(self.node.find('name', recursive=False).get_text(strip=True))}`"
-        )
+        output.append(f"`enum {escape_text(self.text('name'))}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
-        briefdescription = Node(
-            self.node.find("briefdescription", recursive=False), xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
         if briefdescription:
             output.append(briefdescription)
-        detaileddescription = DetaileddescriptionNode(
-            self.node.find("detaileddescription", recursive=False), xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        detaileddescription = self.child("detaileddescription").to_asciidoc(**kwargs)
         if detaileddescription:
             output.append(detaileddescription)
 
-        enumvalues_with_descriptions = self.node(
+        enumvalues_with_descriptions = self.children(
             lambda tag: tag.name == "enumvalue"
-            and tag.briefdescription.get_text(strip=True),
-            recursive=False,
+            and tag.briefdescription.get_text(strip=True)
         )
         if enumvalues_with_descriptions:
             table = [".Enumerator"]
@@ -992,12 +977,10 @@ class EnumMemberdefNode(Node):
             table.append("|===")
             rows = []
             for enumvalue in enumvalues_with_descriptions:
-                row = [
-                    f"|[[{sanitize(enumvalue['id'])}]]{enumvalue.find('name', recursive=False).string}"
-                ]
-                briefdescription = Node(
-                    enumvalue.briefdescription, xmldir=self.xmldir
-                ).to_asciidoc(**kwargs)
+                row = [f"|[[{enumvalue.id}]]{enumvalue.text('name')}"]
+                briefdescription = enumvalue.child("briefdescription").to_asciidoc(
+                    **kwargs
+                )
                 row.append(f"|{briefdescription}")
                 rows.append("\n".join(row))
             table.append("\n\n".join(rows))
@@ -1008,29 +991,25 @@ class EnumMemberdefNode(Node):
 
 class VariableMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
+        name = self.text("name") or self.text("qualifiedname")
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
-                    title(
-                        self.node.find("name", recursive=False).string,
-                        5 + kwargs.get("depth", 0),
-                    ),
+                    f"[#{self.id}]",
+                    title(name, 5 + kwargs.get("depth", 0)),
                 )
             )
         ]
-        output.append(f"`{escape_text(self.node.definition.get_text(strip=True))}`")
+        output.append(f"`{escape_text(self.text('definition'))}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
-        output.append(
-            Node(self.node.briefdescription, xmldir=self.xmldir).to_asciidoc(**kwargs)
-        )
-        output.append(
-            DetaileddescriptionNode(
-                self.node.detaileddescription, xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
-        )
-        return "\n\n".join(filter(None, output))
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
+        if briefdescription:
+            output.append(briefdescription)
+        detaileddescription = self.child("detaileddescription").to_asciidoc(**kwargs)
+        if detaileddescription:
+            output.append(detaileddescription)
+        return "\n\n".join(output)
 
 
 class DefineMemberdefNode(Node):
@@ -1038,26 +1017,22 @@ class DefineMemberdefNode(Node):
         output = [
             "\n".join(
                 (
-                    f"[#{sanitize(self.node['id'])}]",
+                    f"[#{self.id}]",
                     title(
-                        self.node.find("name", recursive=False).string,
+                        self.text("name"),
                         5 + kwargs.get("depth", 0),
                     ),
                 )
             )
         ]
-        name = self.node.find("name", recursive=False).get_text(strip=True)
-        params = [
-            param.get_text(strip=True) for param in self.node("param", recursive=False)
-        ]
+        name = self.text("name")
+        params = [param.text() for param in self.children("param")]
         if params:
             argsstring = f"({', '.join(params)})"
         else:
             argsstring = ""
-        if self.node.initializer:
-            initializer = Node(self.node.initializer, xmldir=self.xmldir).to_asciidoc(
-                programlisting=True
-            )
+        if self.text("initializer"):
+            initializer = self.child("initializer").to_asciidoc(programlisting=True)
             if "\n" in initializer:
                 output.append(
                     "\n".join(
@@ -1077,14 +1052,10 @@ class DefineMemberdefNode(Node):
             output.append(f"`#define {escape_text(name)}{escape_text(argsstring)}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
-        briefdescription = Node(
-            self.node.briefdescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
         if briefdescription:
             output.append(briefdescription)
-        detaileddescription = DetaileddescriptionNode(
-            self.node.detaileddescription, xmldir=self.xmldir
-        ).to_asciidoc(**kwargs)
+        detaileddescription = self.child("detaileddescription").to_asciidoc(**kwargs)
         if detaileddescription:
             output.append(detaileddescription)
         return "\n\n".join(output)
@@ -1094,25 +1065,17 @@ class FunctionSectiondefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [title("Functions", 4 + kwargs.get("depth", 0))]
         functions = []
-        for memberdef in self.node("memberdef", kind="function"):
+        for memberdef in self.descendants("memberdef", kind="function"):
             if memberdef["static"] == "yes":
                 function = ["`static "]
             else:
                 function = ["`"]
+            function.append(memberdef.child("type").to_asciidoc(**kwargs))
             function.append(
-                Node(
-                    memberdef.find("type", recursive=False), xmldir=self.xmldir
-                ).to_asciidoc(**kwargs)
+                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>> "
             )
-            function.append(
-                f" <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>> "
-            )
-            function.append(
-                f"{escape_text(memberdef.find('argsstring', recursive=False).get_text(strip=True))}`:: "
-            )
-            briefdescription = Node(
-                memberdef.briefdescription, xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
+            function.append(f"{escape_text(memberdef.text('argsstring'))}`:: ")
+            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 function.append(briefdescription)
             else:
@@ -1126,16 +1089,12 @@ class TypedefSectiondefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [title("Typedefs", 4 + kwargs.get("depth", 0))]
         typedefs = []
-        for memberdef in self.node("memberdef", kind="typedef"):
-            type_ = Node(
-                memberdef.find("type", recursive=False), xmldir=self.xmldir
-            ).to_asciidoc()
+        for memberdef in self.descendants("memberdef", kind="typedef"):
+            type_ = memberdef.child("type").to_asciidoc(**kwargs)
             typedef = [
-                f"`typedef {type_} <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>{escape_text(memberdef.find('argsstring', recursive=False).get_text(strip=True))}`::"
+                f"`typedef {type_} <<{memberdef.id},{escape_text(memberdef.text('name'))}>>{escape_text(memberdef.text('argsstring'))}`::"
             ]
-            briefdescription = Node(
-                memberdef.briefdescription, xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
+            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 typedef.append(briefdescription)
             else:
@@ -1149,34 +1108,26 @@ class EnumSectiondefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [title("Enumerations", 4 + kwargs.get("depth", 0))]
         enums = []
-        for memberdef in self.node("memberdef", kind="enum"):
+        for memberdef in self.descendants("memberdef", kind="enum"):
             enum = [
-                f"`enum <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>",
+                f"`enum <<{memberdef.id},{escape_text(memberdef.text('name'))}>>",
                 " { ",
             ]
             enumvalues = []
-            for enumvalue in memberdef("enumvalue", recursive=False):
-                if enumvalue.briefdescription.get_text(strip=True):
+            for enumvalue in memberdef.children("enumvalue"):
+                if enumvalue.text("briefdescription"):
                     value = [
-                        f"<<{sanitize(enumvalue['id'])},{escape_text(enumvalue.find('name', recursive=False).get_text(strip=True))}>>"
+                        f"<<{enumvalue.id},{escape_text(enumvalue.text('name'))}>>"
                     ]
                 else:
-                    value = [
-                        escape_text(
-                            enumvalue.find("name", recursive=False).get_text(strip=True)
-                        )
-                    ]
-                if enumvalue.initializer:
-                    value.append(
-                        escape_text(enumvalue.initializer.get_text(strip=True))
-                    )
+                    value = [escape_text(enumvalue.text("name"))]
+                initializer = enumvalue.text("initializer")
+                if initializer:
+                    value.append(escape_text(initializer))
                 enumvalues.append(" ".join(value))
             enum.append(", ".join(enumvalues))
             enum.append(" }`:: ")
-            briefdescription = Node(
-                memberdef.find("briefdescription", recursive=False), xmldir=self.xmldir
-            ).to_asciidoc(**kwargs)
-
+            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 enum.append(briefdescription)
             else:
@@ -1190,22 +1141,19 @@ class DefineSectiondefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [title("Macros", 4 + kwargs.get("depth", 0))]
         macros = []
-        for memberdef in self.node("memberdef", kind="define"):
-            params = [
-                param.get_text(strip=True)
-                for param in memberdef("param", recursive=False)
-            ]
+        for memberdef in self.descendants("memberdef", kind="define"):
+            params = [param.text() for param in memberdef.children("param")]
             if params:
                 argsstring = f"({', '.join(params)})"
             else:
                 argsstring = ""
             macro = [
-                f"* `#define <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>{escape_text(argsstring)}"
+                f"* `#define <<{memberdef.id},{escape_text(memberdef.text('name'))}>>{escape_text(argsstring)}"
             ]
-            if memberdef.initializer:
-                initializer = Node(
-                    memberdef.initializer, xmldir=self.xmldir
-                ).to_asciidoc(programlisting=True)
+            if memberdef.text("initializer"):
+                initializer = memberdef.child("initializer").to_asciidoc(
+                    programlisting=True
+                )
                 if "\n" not in initializer:
                     macro.append(f" {escape_text(initializer)}`")
                 else:

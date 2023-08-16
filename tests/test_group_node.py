@@ -68,7 +68,7 @@ def test_to_asciidoc(tmp_path):
 
         ===== Functions
 
-        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,__force_inline>> void <<group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4,hw_set_bits>> (io_rw_32 ++*++addr, uint32_t mask)`:: Atomically set the specified bits to 1 in a HW register.
+        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void <<group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4,hw_set_bits>> (io_rw_32 ++*++addr, uint32_t mask)`:: Atomically set the specified bits to 1 in a HW register.
 
         ===== Detailed Description
 
@@ -81,7 +81,7 @@ def test_to_asciidoc(tmp_path):
         [#group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4]
         ====== hw_set_bits
 
-        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,__force_inline>> void hw_set_bits (io_rw_32 ++*++ addr, uint32_t mask) [static]`
+        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void hw_set_bits (io_rw_32 ++*++ addr, uint32_t mask) [static]`
 
         Atomically set the specified bits to 1 in a HW register.
 

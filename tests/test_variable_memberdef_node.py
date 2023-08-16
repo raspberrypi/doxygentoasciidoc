@@ -37,3 +37,34 @@ def test_to_asciidoc(tmp_path):
 
         e.g. i2c_init(i2c0, 48000)"""
     )
+
+
+def test_to_asciidoc_with_no_name(tmp_path):
+    xml = """\
+      <memberdef kind="variable" id="structirq__handler__chain__slot_1a75f171191a7a92cb2eb1b4cf1569690a" prot="public" static="no" mutable="no">
+        <type>union <ref refid="structirq__handler__chain__slot" kindref="compound">irq_handler_chain_slot</ref></type>
+        <definition>union irq_handler_chain_slot irq_handler_chain_slot</definition>
+        <argsstring></argsstring>
+        <name></name>
+        <qualifiedname>irq_handler_chain_slot</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="hardware_irq/irq.c" line="99" column="5"/>
+      </memberdef>
+    """
+
+    asciidoc = VariableMemberdefNode(
+        BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
+    ).to_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        [#structirq_handler_chain_slot_1a75f171191a7a92cb2eb1b4cf1569690a]
+        ====== irq_handler_chain_slot
+
+        `union irq_handler_chain_slot irq_handler_chain_slot`"""
+    )

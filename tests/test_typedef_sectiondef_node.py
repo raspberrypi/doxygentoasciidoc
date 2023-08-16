@@ -96,5 +96,5 @@ def test_to_asciidoc_with_refs_in_type(tmp_path):
         """\
         ===== Typedefs
 
-        `typedef struct <<struct_packed_aligned,__packed_aligned>> <<structmutex,mutex>> <<group_mutex_1gaa0676aca346799845ab75d3fb6d96ff6,mutex_t>>`:: regular (non recursive) mutex instance"""
+        `typedef struct <<struct_packed_aligned,++__packed_aligned++>> <<structmutex,mutex>> <<group_mutex_1gaa0676aca346799845ab75d3fb6d96ff6,mutex_t>>`:: regular (non recursive) mutex instance"""
     )

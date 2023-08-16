@@ -1,6 +1,6 @@
 from textwrap import dedent
 from bs4 import BeautifulSoup, NavigableString
-from doxygentoasciidoc.nodes import Node
+from doxygentoasciidoc.nodes import Node, BoldNode, EmphasisNode
 
 
 def test_it_renders_escaped_text(tmp_path):
@@ -71,7 +71,7 @@ def test_previous_node_returns_the_first_non_text_node(tmp_path):
     """
     node = Node(BeautifulSoup(xml, "xml").para.bold, xmldir=tmp_path)
 
-    assert node.previous_node.name == "emphasis"
+    assert node.previous_node().name == "emphasis"
 
 
 def test_next_node_returns_the_first_non_text_node(tmp_path):
@@ -80,7 +80,7 @@ def test_next_node_returns_the_first_non_text_node(tmp_path):
     """
     node = Node(BeautifulSoup(xml, "xml").para.title, xmldir=tmp_path)
 
-    assert node.next_node.name == "emphasis"
+    assert node.next_node().name == "emphasis"
 
 
 def test_empty_node_outputs_nothing(tmp_path):
@@ -187,3 +187,99 @@ def test_soup_returns_beautiful_soup(tmp_path):
     node = Node(soup.bold, xmldir=tmp_path)
 
     assert node.soup() == soup
+
+
+def test_text_returns_the_stripped_text_of_the_node():
+    xml = "<para> Hello world </para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node.text() == "Hello world"
+
+
+def test_text_returns_the_stripped_text_of_a_given_child():
+    xml = "<para>Hello <bold> world </bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node.text("bold") == "world"
+
+
+def test_text_returns_nothing_if_the_child_does_not_exist():
+    xml = "<para>Hello <bold> world </bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node.text("emphasis") is None
+
+
+def test_child_returns_the_first_given_child():
+    xml = "<para>Hello <bold> world </bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert isinstance(node.child("bold"), BoldNode)
+
+
+def test_child_returns_nothing_if_the_given_child_does_not_exist():
+    xml = "<para>Hello <bold> world </bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node.child("emphasis") is None
+
+
+def test_children_returns_all_child_nodes_wrapped_in_node_classes():
+    xml = "<para>Hello <bold><emphasis>world</emphasis></bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+    children = list(node.children())
+
+    assert isinstance(children[0], Node)
+    assert isinstance(children[1], BoldNode)
+    assert isinstance(children[1], Node)
+
+
+def test_children_only_returns_children_with_the_given_selector():
+    xml = "<para>Hello <bold> world </bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+    children = list(node.children("bold"))
+
+    assert len(children) == 1
+    assert isinstance(children[0], BoldNode)
+
+
+def test_children_passes_extra_kwargs_to_beautiful_soup():
+    xml = """<para>Hello <bold>world</bold> <bold kind="personal">you</bold></para>"""
+    node = Node(BeautifulSoup(xml, "xml").para)
+    children = list(node.children("bold", kind="personal"))
+
+    assert len(children) == 1
+    assert isinstance(children[0], BoldNode)
+
+
+def test_descendants_returns_matching_descendants_with_the_given_selector():
+    xml = "<para>Hello <bold><emphasis>world</emphasis></bold></para>"
+    node = Node(BeautifulSoup(xml, "xml").para)
+    descendants = list(node.descendants("emphasis"))
+
+    assert len(descendants) == 1
+    assert isinstance(descendants[0], EmphasisNode)
+
+
+def test_descendants_passes_extra_kwargs_to_beautiful_soup():
+    xml = """<para>Hello <bold><emphasis>world</emphasis> <emphasis kind="personal">you</emphasis></bold></para>"""
+    node = Node(BeautifulSoup(xml, "xml").para)
+    descendants = list(node.descendants("emphasis", kind="personal"))
+
+    assert len(descendants) == 1
+    assert isinstance(descendants[0], EmphasisNode)
+
+
+def test_id_returns_sanitized_id():
+    xml = """<para id="group__hardware__base">Hello</para>"""
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node.id == "group_hardware_base"
+
+
+def test_nodes_are_subscriptable():
+    xml = """<para kind="group" id="not__sanitized">Hello</para>"""
+    node = Node(BeautifulSoup(xml, "xml").para)
+
+    assert node["kind"] == "group"
+    assert node["id"] == "not__sanitized"
