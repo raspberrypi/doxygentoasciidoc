@@ -1123,8 +1123,11 @@ class TypedefSectiondefNode(Node):
         output = [title("Typedefs", 4 + kwargs.get("depth", 0))]
         typedefs = []
         for memberdef in self.node("memberdef", kind="typedef"):
+            type_ = Node(
+                memberdef.find("type", recursive=False), xmldir=self.xmldir
+            ).to_asciidoc()
             typedef = [
-                f"`typedef {escape_text(memberdef.find('type', recursive=False).get_text(strip=True))} <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>{escape_text(memberdef.find('argsstring', recursive=False).get_text(strip=True))}`::"
+                f"`typedef {type_} <<{sanitize(memberdef['id'])},{escape_text(memberdef.find('name', recursive=False).get_text(strip=True))}>>{escape_text(memberdef.find('argsstring', recursive=False).get_text(strip=True))}`::"
             ]
             briefdescription = Node(
                 memberdef.briefdescription, xmldir=self.xmldir
