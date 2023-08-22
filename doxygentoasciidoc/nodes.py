@@ -1006,7 +1006,21 @@ class VariableMemberdefNode(Node):
                 )
             )
         ]
-        output.append(f"`{escape_text(self.text('definition'))}`")
+        definition = self.text("definition")
+        if self.text("initializer"):
+            initializer = self.child("initializer").to_asciidoc(programlisting=True)
+            output.append(
+                "\n".join(
+                    (
+                        "[source,c]",
+                        "----",
+                        f"{definition} {initializer.lstrip()}",
+                        "----",
+                    )
+                )
+            )
+        else:
+            output.append(f"`{escape_text(definition)}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)

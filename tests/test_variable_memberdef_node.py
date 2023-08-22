@@ -68,3 +68,45 @@ def test_to_asciidoc_with_no_name(tmp_path):
 
         `union irq_handler_chain_slot irq_handler_chain_slot`"""
     )
+
+
+def test_to_asciidoc_with_initializer(tmp_path):
+    xml = """\
+      <memberdef kind="variable" id="pico__flash_2flash_8c_1a61d721f8bcbcf9ae65e69369b870ec4d" prot="public" static="yes" mutable="no">
+        <type><ref refid="structflash__safety__helper__t" kindref="compound">flash_safety_helper_t</ref></type>
+        <definition>flash_safety_helper_t default_flash_safety_helper</definition>
+        <argsstring></argsstring>
+        <name>default_flash_safety_helper</name>
+        <initializer>= {
+        .core_init_deinit = default_core_init_deinit,
+        .enter_safe_zone_timeout_ms = default_enter_safe_zone_timeout_ms,
+        .exit_safe_zone_timeout_ms = default_exit_safe_zone_timeout_ms
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="pico_flash/flash.c" line="43" column="30" bodyfile="pico_flash/flash.c" bodystart="43" bodyend="-1"/>
+      </memberdef>
+    """
+
+    asciidoc = VariableMemberdefNode(
+        BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
+    ).to_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        [#pico_flash_2flash_8c_1a61d721f8bcbcf9ae65e69369b870ec4d]
+        ====== default_flash_safety_helper
+
+        [source,c]
+        ----
+        flash_safety_helper_t default_flash_safety_helper = {
+                .core_init_deinit = default_core_init_deinit,
+                .enter_safe_zone_timeout_ms = default_enter_safe_zone_timeout_ms,
+                .exit_safe_zone_timeout_ms = default_exit_safe_zone_timeout_ms
+        }
+        ----"""
+    )
