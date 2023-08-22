@@ -204,6 +204,7 @@ class Node:
                 "typedef": TypedefSectiondefNode,
                 "func": FunctionSectiondefNode,
                 "var": VariableSectiondefNode,
+                "user-defined": UserDefinedSectiondefNode,
             }[element["kind"]]
 
         if element.name == "memberdef":
@@ -220,6 +221,7 @@ class Node:
             "bold": BoldNode,
             "briefdescription": Node,
             "detaileddescription": DetaileddescriptionNode,
+            "description": Node,
             "codeline": CodelineNode,
             "compound": Node,
             "computeroutput": ComputeroutputNode,
@@ -407,6 +409,9 @@ class GroupNode(Node):
         variables = self.__list_variables(**kwargs)
         if variables:
             output.append(variables)
+        userdefinedsections = self.__list_userdefined_sections(**kwargs)
+        if userdefinedsections:
+            output.append(userdefinedsections)
         detaileddescription = self.__output_detaileddescription(**kwargs)
         if detaileddescription:
             output.append(detaileddescription)
@@ -495,6 +500,12 @@ class GroupNode(Node):
     def __list_functions(self, **kwargs):
         output = []
         for sectiondef in self.children("sectiondef", kind="func"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
+        return "\n\n".join(output)
+
+    def __list_userdefined_sections(self, **kwargs):
+        output = []
+        for sectiondef in self.children("sectiondef", kind="user-defined"):
             output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
@@ -1226,4 +1237,20 @@ class VariableSectiondefNode(Node):
                 variable.append("{empty}")
             variables.append("".join(variable))
         output.append("\n".join(variables))
+        return "\n\n".join(output)
+
+
+class UserDefinedSectiondefNode(Node):
+    def to_asciidoc(self, **kwargs):
+        output = []
+        header = self.text("header")
+        if header:
+            output.append(title(header, 4 + kwargs.get("depth", 0)))
+        description = self.child("description")
+        if description:
+            output.append(description.to_asciidoc(**kwargs))
+        members = []
+        for memberdef in self.children("memberdef"):
+            members.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n".join(members))
         return "\n\n".join(output)
