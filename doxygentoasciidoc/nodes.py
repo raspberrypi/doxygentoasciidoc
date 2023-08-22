@@ -215,6 +215,7 @@ class Node:
             }[element["kind"]]
 
         return {
+            "anchor": AnchorNode,
             "bold": BoldNode,
             "briefdescription": Node,
             "detaileddescription": DetaileddescriptionNode,
@@ -669,6 +670,11 @@ class CodelineNode(Node):
     def to_asciidoc(self, **kwargs):
         kwargs["programlisting"] = True
         return super().to_asciidoc(**kwargs)
+
+
+class AnchorNode(Node):
+    def to_asciidoc(self, **kwargs):
+        return f"[[{self.id}]]"
 
 
 class SpNode(Node):
