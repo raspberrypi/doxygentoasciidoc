@@ -203,6 +203,7 @@ class Node:
                 "enum": EnumSectiondefNode,
                 "typedef": TypedefSectiondefNode,
                 "func": FunctionSectiondefNode,
+                "var": VariableSectiondefNode,
             }[element["kind"]]
 
         if element.name == "memberdef":
@@ -486,25 +487,9 @@ class GroupNode(Node):
         return "\n\n".join(output)
 
     def __list_variables(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="variable")
-        if not memberdefs:
-            return ""
-
-        output = [title("Variables", 4 + kwargs.get("depth", 0))]
-        variables = []
-        for memberdef in memberdefs:
-            variable = ["`"]
-            variable.append(memberdef.child("type").to_asciidoc(**kwargs))
-            variable.append(
-                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>>`:: "
-            )
-            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
-            if briefdescription:
-                variable.append(briefdescription)
-            else:
-                variable.append("{empty}")
-            variables.append("".join(variable))
-        output.append("\n".join(variables))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="var"):
+            output.append(sectiondef.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_functions(self, **kwargs):
@@ -514,64 +499,33 @@ class GroupNode(Node):
         return "\n\n".join(output)
 
     def __list_typedef_details(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="typedef")
-        if not memberdefs:
-            return ""
-        output = [title("Typedef Documentation", 4 + kwargs.get("depth", 0))]
-        typedefs = []
-        for memberdef in memberdefs:
-            typedefs.append(memberdef.to_asciidoc(**kwargs))
-        output.append("\n".join(typedefs))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="typedef"):
+            output.append(sectiondef.to_details_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_function_details(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="function")
-        if not memberdefs:
-            return ""
-
-        output = [title("Function Documentation", 4 + kwargs.get("depth", 0))]
-        functions = []
-        for memberdef in sorted(
-            memberdefs, key=lambda memberdef: memberdef.text("name")
-        ):
-            functions.append(memberdef.to_asciidoc(**kwargs))
-        output.append("\n\n".join(functions))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="func"):
+            output.append(sectiondef.to_details_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_enum_details(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="enum")
-        if not memberdefs:
-            return ""
-
-        output = [title("Enumeration Type Documentation", 4 + kwargs.get("depth", 0))]
-        enums = []
-        for memberdef in memberdefs:
-            enums.append(memberdef.to_asciidoc(**kwargs))
-        output.append("\n".join(enums))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="enum"):
+            output.append(sectiondef.to_details_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_variable_details(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="variable")
-        if not memberdefs:
-            return ""
-
-        output = [title("Variable Documentation", 4 + kwargs.get("depth", 0))]
-        variables = []
-        for memberdef in memberdefs:
-            variables.append(memberdef.to_asciidoc(**kwargs))
-        output.append("\n".join(variables))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="var"):
+            output.append(sectiondef.to_details_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def __list_macro_details(self, **kwargs):
-        memberdefs = self.descendants("memberdef", kind="define")
-        if not memberdefs:
-            return ""
-
-        output = [title("Macro Definition Documentation", 4 + kwargs.get("depth", 0))]
-        macros = []
-        for memberdef in memberdefs:
-            macros.append(memberdef.to_asciidoc(**kwargs))
-        output.append("\n".join(macros))
+        output = []
+        for sectiondef in self.children("sectiondef", kind="define"):
+            output.append(sectiondef.to_details_asciidoc(**kwargs))
         return "\n\n".join(output)
 
 
@@ -1082,10 +1036,24 @@ class DefineMemberdefNode(Node):
 
 
 class FunctionSectiondefNode(Node):
+    def to_details_asciidoc(self, **kwargs):
+        memberdefs = self.children("memberdef", kind="function")
+        if not memberdefs:
+            return ""
+
+        output = [title("Function Documentation", 4 + kwargs.get("depth", 0))]
+        functions = []
+        for memberdef in sorted(
+            memberdefs, key=lambda memberdef: memberdef.text("name")
+        ):
+            functions.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n\n".join(functions))
+        return "\n\n".join(output)
+
     def to_asciidoc(self, **kwargs):
         output = [title("Functions", 4 + kwargs.get("depth", 0))]
         functions = []
-        for memberdef in self.descendants("memberdef", kind="function"):
+        for memberdef in self.children("memberdef", kind="function"):
             if memberdef["static"] == "yes":
                 function = ["`static "]
             else:
@@ -1106,10 +1074,21 @@ class FunctionSectiondefNode(Node):
 
 
 class TypedefSectiondefNode(Node):
+    def to_details_asciidoc(self, **kwargs):
+        memberdefs = self.children("memberdef", kind="typedef")
+        if not memberdefs:
+            return ""
+        output = [title("Typedef Documentation", 4 + kwargs.get("depth", 0))]
+        typedefs = []
+        for memberdef in memberdefs:
+            typedefs.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n".join(typedefs))
+        return "\n\n".join(output)
+
     def to_asciidoc(self, **kwargs):
         output = [title("Typedefs", 4 + kwargs.get("depth", 0))]
         typedefs = []
-        for memberdef in self.descendants("memberdef", kind="typedef"):
+        for memberdef in self.children("memberdef", kind="typedef"):
             type_ = memberdef.child("type").to_asciidoc(**kwargs)
             typedef = [
                 f"`typedef {type_} <<{memberdef.id},{escape_text(memberdef.text('name'))}>>{escape_text(memberdef.text('argsstring'))}`::"
@@ -1125,10 +1104,22 @@ class TypedefSectiondefNode(Node):
 
 
 class EnumSectiondefNode(Node):
+    def to_details_asciidoc(self, **kwargs):
+        memberdefs = self.children("memberdef", kind="enum")
+        if not memberdefs:
+            return ""
+
+        output = [title("Enumeration Type Documentation", 4 + kwargs.get("depth", 0))]
+        enums = []
+        for memberdef in memberdefs:
+            enums.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n".join(enums))
+        return "\n\n".join(output)
+
     def to_asciidoc(self, **kwargs):
         output = [title("Enumerations", 4 + kwargs.get("depth", 0))]
         enums = []
-        for memberdef in self.descendants("memberdef", kind="enum"):
+        for memberdef in self.children("memberdef", kind="enum"):
             enum = [
                 f"`enum <<{memberdef.id},{escape_text(memberdef.text('name'))}>>",
                 " { ",
@@ -1158,10 +1149,22 @@ class EnumSectiondefNode(Node):
 
 
 class DefineSectiondefNode(Node):
+    def to_details_asciidoc(self, **kwargs):
+        memberdefs = self.children("memberdef", kind="define")
+        if not memberdefs:
+            return ""
+
+        output = [title("Macro Definition Documentation", 4 + kwargs.get("depth", 0))]
+        macros = []
+        for memberdef in memberdefs:
+            macros.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n".join(macros))
+        return "\n\n".join(output)
+
     def to_asciidoc(self, **kwargs):
         output = [title("Macros", 4 + kwargs.get("depth", 0))]
         macros = []
-        for memberdef in self.descendants("memberdef", kind="define"):
+        for memberdef in self.children("memberdef", kind="define"):
             params = [param.text() for param in memberdef.children("param")]
             if params:
                 argsstring = f"({', '.join(params)})"
@@ -1182,4 +1185,36 @@ class DefineSectiondefNode(Node):
                 macro.append("`")
             macros.append("".join(macro))
         output.append("\n".join(macros))
+        return "\n\n".join(output)
+
+
+class VariableSectiondefNode(Node):
+    def to_details_asciidoc(self, **kwargs):
+        memberdefs = self.children("memberdef", kind="variable")
+        if not memberdefs:
+            return ""
+
+        output = [title("Variable Documentation", 4 + kwargs.get("depth", 0))]
+        variables = []
+        for memberdef in memberdefs:
+            variables.append(memberdef.to_asciidoc(**kwargs))
+        output.append("\n".join(variables))
+        return "\n\n".join(output)
+
+    def to_asciidoc(self, **kwargs):
+        output = [title("Variables", 4 + kwargs.get("depth", 0))]
+        variables = []
+        for memberdef in self.children("memberdef", kind="variable"):
+            variable = ["`"]
+            variable.append(memberdef.child("type").to_asciidoc(**kwargs))
+            variable.append(
+                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>>`:: "
+            )
+            briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
+            if briefdescription:
+                variable.append(briefdescription)
+            else:
+                variable.append("{empty}")
+            variables.append("".join(variable))
+        output.append("\n".join(variables))
         return "\n\n".join(output)

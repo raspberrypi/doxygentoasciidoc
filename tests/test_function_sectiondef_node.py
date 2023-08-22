@@ -158,3 +158,43 @@ def test_to_asciidoc_with_ref_in_type(tmp_path):
 
         `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void <<group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4,hw_set_bits>> (io_rw_32 ++*++addr, uint32_t mask)`:: Atomically set the specified bits to 1 in a HW register."""
     )
+
+
+def test_to_details_asciidoc(tmp_path):
+    xml = """\
+      <sectiondef kind="func">
+      <memberdef kind="function" id="group__hardware__adc_1ga2b815e6730e8723a6d1d06d9ef8f31c0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void adc_init</definition>
+        <argsstring>(void)</argsstring>
+        <name>adc_init</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>Initialise the ADC HW. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="hardware_adc/include/hardware/adc.h" line="60" column="6" bodyfile="hardware_adc/adc.c" bodystart="11" bodyend="23" declfile="hardware_adc/include/hardware/adc.h" declline="60" declcolumn="6"/>
+      </memberdef>
+      </sectiondef>
+    """
+
+    asciidoc = FunctionSectiondefNode(
+        BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
+    ).to_details_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        ===== Function Documentation
+
+        [#group_hardware_adc_1ga2b815e6730e8723a6d1d06d9ef8f31c0]
+        ====== adc_init
+
+        `void adc_init (void)`
+
+        Initialise the ADC HW."""
+    )

@@ -93,3 +93,46 @@ def test_to_asciidoc_with_no_description(tmp_path):
 
         `enum <<group_hardware_clocks_1ga7ac25aa331f7c2624795b6088f87d133,clock_index>> { <<group_hardware_clocks_1gga7ac25aa331f7c2624795b6088f87d133a8c35a604478e413afed2b3c558df5c64,clk_gpout0>> = 0 }`:: {empty}"""
     )
+
+
+def test_to_details_asciidoc(tmp_path):
+    xml = """\
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="group__hardware__exception_1ga504f1c3a5a6959d430665f5d72cf335a" prot="public" static="no" strong="no">
+        <type></type>
+        <name>exception_number</name>
+        <enumvalue id="group__hardware__exception_1gga504f1c3a5a6959d430665f5d72cf335aa6e8a4e796361d59517c80affc6e93cd7" prot="public">
+          <name>NMI_EXCEPTION</name>
+          <initializer>= -14</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Exception number definitions. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="hardware_exception/include/hardware/exception.h" line="50" column="1" bodyfile="hardware_exception/include/hardware/exception.h" bodystart="50" bodyend="56"/>
+      </memberdef>
+      </sectiondef>
+    """
+
+    asciidoc = EnumSectiondefNode(
+        BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
+    ).to_details_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        ===== Enumeration Type Documentation
+
+        [#group_hardware_exception_1ga504f1c3a5a6959d430665f5d72cf335a]
+        ====== exception_number
+
+        `enum exception_number`
+
+        Exception number definitions."""
+    )
