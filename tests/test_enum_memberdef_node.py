@@ -225,3 +225,60 @@ def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path)
         |12 mA nominal drive strength
         |==="""
     )
+
+
+def test_to_asciidoc_with_anonymous_enum(tmp_path):
+    xml = """\
+      <memberdef kind="enum" id="group__cyw43__ll_1gadf764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no" strong="no">
+        <type></type>
+        <name></name>
+        <enumvalue id="group__cyw43__ll_1ggadf764cbdea00d65edcd07bb9953ad2b7a01beff8333d8764c54b44bf2297a1f52" prot="public">
+          <name>CYW43_ITF_STA</name>
+          <briefdescription>
+<para>Client interface STA mode. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="group__cyw43__ll_1ggadf764cbdea00d65edcd07bb9953ad2b7add57ac73ff47f04da4f09a7aaeb7eb90" prot="public">
+          <name>CYW43_ITF_AP</name>
+          <briefdescription>
+<para>Access point (AP) interface mode. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Network interface types <anchor id="group__cyw43__ll_1CYW43_ITF_"/>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="cyw43_ll.h" line="207" column="1" bodyfile="cyw43_ll.h" bodystart="207" bodyend="210"/>
+      </memberdef>
+    """
+
+    asciidoc = EnumMemberdefNode(
+        BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
+    ).to_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        [#group_cyw43_ll_1gadf764cbdea00d65edcd07bb9953ad2b7]
+        ====== anonymous enum
+
+        `anonymous enum`
+
+        Network interface types [[group_cyw43_ll_1CYW43_ITF_]].
+
+        .Enumerator
+        [cols="h,1"]
+        |===
+        |[[group_cyw43_ll_1ggadf764cbdea00d65edcd07bb9953ad2b7a01beff8333d8764c54b44bf2297a1f52]]CYW43_ITF_STA
+        |Client interface STA mode.
+
+        |[[group_cyw43_ll_1ggadf764cbdea00d65edcd07bb9953ad2b7add57ac73ff47f04da4f09a7aaeb7eb90]]CYW43_ITF_AP
+        |Access point (AP) interface mode.
+        |==="""
+    )

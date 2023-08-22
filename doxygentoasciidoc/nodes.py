@@ -906,18 +906,22 @@ class TypedefMemberdefNode(Node):
 
 class EnumMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
+        name = self.text("name")
         output = [
             "\n".join(
                 (
                     f"[#{self.id}]",
                     title(
-                        self.text("name"),
+                        name or "anonymous enum",
                         5 + kwargs.get("depth", 0),
                     ),
                 )
             )
         ]
-        output.append(f"`enum {escape_text(self.text('name'))}`")
+        if name:
+            output.append(f"`enum {escape_text(name)}`")
+        else:
+            output.append("`anonymous enum`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -1120,10 +1124,15 @@ class EnumSectiondefNode(Node):
         output = [title("Enumerations", 4 + kwargs.get("depth", 0))]
         enums = []
         for memberdef in self.children("memberdef", kind="enum"):
-            enum = [
-                f"`enum <<{memberdef.id},{escape_text(memberdef.text('name'))}>>",
-                " { ",
-            ]
+            enum = []
+            name = memberdef.text("name")
+            if name:
+                enum.append(
+                    f"`enum <<{memberdef.id},{escape_text(memberdef.text('name'))}>>"
+                )
+                enum.append(" { ")
+            else:
+                enum.append("`enum { ")
             enumvalues = []
             for enumvalue in memberdef.children("enumvalue"):
                 if enumvalue.text("briefdescription"):

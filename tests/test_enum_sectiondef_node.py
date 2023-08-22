@@ -136,3 +136,49 @@ def test_to_details_asciidoc(tmp_path):
 
         Exception number definitions."""
     )
+
+
+def test_to_asciidoc_with_anonymous_enum(tmp_path):
+    xml = """\
+      <sectiondef kind="user-defined">
+      <memberdef kind="enum" id="group__cyw43__ll_1gadf764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no" strong="no">
+        <type></type>
+        <name></name>
+        <enumvalue id="group__cyw43__ll_1ggadf764cbdea00d65edcd07bb9953ad2b7a01beff8333d8764c54b44bf2297a1f52" prot="public">
+          <name>CYW43_ITF_STA</name>
+          <briefdescription>
+<para>Client interface STA mode. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="group__cyw43__ll_1ggadf764cbdea00d65edcd07bb9953ad2b7add57ac73ff47f04da4f09a7aaeb7eb90" prot="public">
+          <name>CYW43_ITF_AP</name>
+          <briefdescription>
+<para>Access point (AP) interface mode. </para>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Network interface types <anchor id="group__cyw43__ll_1CYW43_ITF_"/>. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="cyw43_ll.h" line="207" column="1" bodyfile="cyw43_ll.h" bodystart="207" bodyend="210"/>
+      </memberdef>
+      </sectiondef>
+    """
+
+    asciidoc = EnumSectiondefNode(
+        BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
+    ).to_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        ===== Enumerations
+
+        `enum { <<group_cyw43_ll_1ggadf764cbdea00d65edcd07bb9953ad2b7a01beff8333d8764c54b44bf2297a1f52,CYW43_ITF_STA>>, <<group_cyw43_ll_1ggadf764cbdea00d65edcd07bb9953ad2b7add57ac73ff47f04da4f09a7aaeb7eb90,CYW43_ITF_AP>> }`:: Network interface types [[group_cyw43_ll_1CYW43_ITF_]]."""
+    )
