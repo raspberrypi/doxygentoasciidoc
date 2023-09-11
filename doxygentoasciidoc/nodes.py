@@ -280,17 +280,17 @@ class DoxygenindexNode(Node):
             )
             if briefdescription:
                 output.append(briefdescription)
+            detaileddescription = module.node.child("detaileddescription").to_asciidoc(
+                documentation=True, **kwargs
+            )
+            if detaileddescription:
+                output.append(detaileddescription)
             table = ['[cols="1,4"]', "|==="]
             for child in module.children:
                 table.append(child.to_asciidoc_row())
             table.append("|===")
             if len(table) > 3:
                 output.append("\n".join(table))
-            detaileddescription = module.node.child("detaileddescription").to_asciidoc(
-                documentation=True, **kwargs
-            )
-            if detaileddescription:
-                output.append(detaileddescription)
             for child in module.children:
                 output.append(child.to_asciidoc(**kwargs))
         return "\n\n".join(output)
@@ -363,6 +363,9 @@ class GroupNode(Node):
         briefdescription = self.__output_briefdescription(**kwargs)
         if briefdescription:
             output.append(briefdescription)
+        detaileddescription = self.__output_detaileddescription(**kwargs)
+        if detaileddescription:
+            output.append(detaileddescription)
         modules = self.__list_modules(**kwargs)
         if modules:
             output.append(modules)
@@ -384,9 +387,6 @@ class GroupNode(Node):
         userdefinedsections = self.__list_userdefined_sections(**kwargs)
         if userdefinedsections:
             output.append(userdefinedsections)
-        detaileddescription = self.__output_detaileddescription(**kwargs)
-        if detaileddescription:
-            output.append(detaileddescription)
         macrodetails = self.__list_macro_details(**kwargs)
         if macrodetails:
             output.append(macrodetails)

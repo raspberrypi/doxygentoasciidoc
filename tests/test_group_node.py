@@ -66,15 +66,15 @@ def test_to_asciidoc(tmp_path):
         [[group_hardware_base,hardware_base]]
         ==== hardware_base
 
-        ===== Functions
-
-        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void <<group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4,hw_set_bits>> (io_rw_32 ++*++addr, uint32_t mask)`:: Atomically set the specified bits to 1 in a HW register.
-
         ===== Detailed Description
 
         Low-level types and (atomic) accessors for memory-mapped hardware registers
 
         `hardware_base` defines the low level types and access functions for memory mapped hardware registers. It is included by default by all other hardware libraries.
+
+        ===== Functions
+
+        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void <<group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4,hw_set_bits>> (io_rw_32 ++*++addr, uint32_t mask)`:: Atomically set the specified bits to 1 in a HW register.
 
         ===== Function Documentation
 

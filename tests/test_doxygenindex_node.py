@@ -83,6 +83,8 @@ def test_to_asciidoc(tmp_path):
         [[group_hardware,Hardware APIs]]
         === Hardware APIs
 
+        This group of libraries provides a thin and efficient C API / abstractions to access the RP2040 hardware without having to read and write hardware registers directly.
+
         [cols="1,4"]
         |===
         |<<group_hardware_base,hardware_base>>
@@ -92,20 +94,18 @@ def test_to_asciidoc(tmp_path):
         |DMA channel configuration.
         |===
 
-        This group of libraries provides a thin and efficient C API / abstractions to access the RP2040 hardware without having to read and write hardware registers directly.
-
         [[group_hardware_base,hardware_base]]
         ==== hardware_base
-
-        ===== Modules
-
-        <<group_channel_config,channel_config>>:: DMA channel configuration.
 
         ===== Detailed Description
 
         Low-level types and (atomic) accessors for memory-mapped hardware registers
 
         `hardware_base` defines the low level types and access functions for memory mapped hardware registers. It is included by default by all other hardware libraries.
+
+        ===== Modules
+
+        <<group_channel_config,channel_config>>:: DMA channel configuration.
 
         [[group_channel_config,channel_config]]
         ===== channel_config
