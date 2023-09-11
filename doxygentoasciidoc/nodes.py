@@ -194,7 +194,6 @@ class Node:
         if element.name == "compounddef":
             return {
                 "group": GroupNode,
-                "struct": DataStructureNode,
             }[element["kind"]]
 
         if element.name == "sectiondef":
@@ -294,16 +293,6 @@ class DoxygenindexNode(Node):
                 output.append(detaileddescription)
             for child in module.children:
                 output.append(child.to_asciidoc(**kwargs))
-        output.append(
-            "\n".join(
-                (
-                    "[#datastructures]",
-                    title("Data Structures", 2),
-                )
-            )
-        )
-        for datastructure in self.datastructures():
-            output.append(datastructure.to_asciidoc(**kwargs))
         return "\n\n".join(output)
 
     def rootmodules(self):
@@ -334,20 +323,6 @@ class DoxygenindexNode(Node):
                     group.children.append(child)
 
         return (group for (refid, group) in groups.items() if group.isroot())
-
-    def datastructures(self):
-        """Return a list of data structures from the Doxygen index."""
-        datastructures = []
-        for compound in self.children("compound", kind="struct"):
-            with open(
-                f'{self.xmldir}/{compound["refid"]}.xml', encoding="utf-8"
-            ) as compoundxml:
-                doxygenroot = Node(
-                    BeautifulSoup(compoundxml, "xml").doxygen, xmldir=self.xmldir
-                )
-            for compounddef in doxygenroot.children("compounddef", kind="struct"):
-                datastructures.append(compounddef)
-        return datastructures
 
     class Group:
         """An inner class to represent the full hierarchy of modules."""
@@ -391,9 +366,6 @@ class GroupNode(Node):
         modules = self.__list_modules(**kwargs)
         if modules:
             output.append(modules)
-        data_structures = self.__list_data_structures(**kwargs)
-        if data_structures:
-            output.append(data_structures)
         macros = self.__list_macros(**kwargs)
         if macros:
             output.append(macros)
@@ -461,18 +433,6 @@ class GroupNode(Node):
         output.append("\n".join(modules))
         return "\n\n".join(output)
 
-    def __list_data_structures(self, **kwargs):
-        innerclasses = self.children("innerclass")
-        if not innerclasses:
-            return ""
-
-        output = [title("Data Structures", 4 + kwargs.get("depth", 0))]
-        datastructures = []
-        for innerclass in innerclasses:
-            datastructures.append(innerclass.to_asciidoc(**kwargs))
-        output.append("\n".join(datastructures))
-        return "\n\n".join(output)
-
     def __list_macros(self, **kwargs):
         output = []
         for sectiondef in self.children("sectiondef", kind="define"):
@@ -537,37 +497,6 @@ class GroupNode(Node):
         output = []
         for sectiondef in self.children("sectiondef", kind="define"):
             output.append(sectiondef.to_details_asciidoc(**kwargs))
-        return "\n\n".join(output)
-
-
-class DataStructureNode(Node):
-    def to_asciidoc(self, **kwargs):
-        output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(
-                        self.text("compoundname"),
-                        3 + kwargs.get("depth", 0),
-                    ),
-                )
-            )
-        ]
-        briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
-        if briefdescription:
-            output.append(briefdescription)
-        detaileddescription = self.child("detaileddescription").to_asciidoc(
-            documentation=True, **kwargs
-        )
-        if detaileddescription:
-            output.append(detaileddescription)
-        memberdefs = self.descendants("memberdef", kind="variable")
-        if memberdefs:
-            output.append(title("Variable Documentation", 4 + kwargs.get("depth", 0)))
-            variables = []
-            for memberdef in memberdefs:
-                variables.append(memberdef.to_asciidoc(**kwargs))
-            output.append("\n\n".join(variables))
         return "\n\n".join(output)
 
 

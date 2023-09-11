@@ -110,8 +110,5 @@ def test_to_asciidoc(tmp_path):
         [[group_channel_config,channel_config]]
         ===== channel_config
 
-        DMA channel configuration.
-
-        [#datastructures]
-        === Data Structures"""
+        DMA channel configuration."""
     )
