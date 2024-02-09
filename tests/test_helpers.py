@@ -42,7 +42,7 @@ def test_title_with_level_5():
 
 
 def test_title_with_level_6():
-    assert title("Level 6 Section Title", 6) == "*Level 6 Section Title*"
+    assert title("Level 6 Section Title", 6) == "[.h6]\n*Level 6 Section Title*"
 
 
 def test_title_escapes_text():
@@ -50,4 +50,4 @@ def test_title_escapes_text():
 
 
 def test_title_escapes_text_with_level_6():
-    assert title("3 * 2 = 6", 6) == "*3 ++*++ 2 = 6*"
+    assert title("3 * 2 = 6", 6) == "[.h6]\n*3 ++*++ 2 = 6*"
