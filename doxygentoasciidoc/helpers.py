@@ -21,7 +21,7 @@ def sanitize(identifier):
 def title(text, level):
     """Return text formatted as a title with the given level."""
     if level > 5:
-        return f"*{escape_text(text)}*"
+        return f"[.h5]\n*{escape_text(text)}*"
 
     marker = "=" * (level + 1)
     return f"{marker} {escape_text(text)}"
