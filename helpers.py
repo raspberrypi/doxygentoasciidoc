@@ -18,10 +18,20 @@ def sanitize(identifier):
     return re.sub(r"__+", r"_", identifier)
 
 
-def title(text, level):
+def title(text, level, attributes=None):
     """Return text formatted as a title with the given level."""
     if level > 5:
-        return f"[.h6]\n*{escape_text(text)}*"
+        if attributes is not None:
+            if re.search(r'([,\s]role=)', attributes) is not None:
+                attributes = re.sub(r'([,\s]role=)(.*?[,\s]?$)', "\\1h6 \\2", attributes)
+            else:
+                attributes += ",role=h6"
+            return f"[{attributes}]\n*{escape_text(text)}*"
+        else:
+            return f"[.h6]\n*{escape_text(text)}*"
 
     marker = "=" * (level + 1)
-    return f"{marker} {escape_text(text)}"
+    if attributes is not None:
+        return f"[{attributes}]\n{marker} {escape_text(text)}"
+    else:
+        return f"{marker} {escape_text(text)}"

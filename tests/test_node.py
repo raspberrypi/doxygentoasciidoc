@@ -277,6 +277,49 @@ def test_id_returns_sanitized_id():
     assert node.id == "group_hardware_base"
 
 
+def test_attributes_are_preserved():
+    xml = """<memberdef const="no" explicit="no" id="group__hardware__gpio_1ga5d7dbadb2233e2e6627e9101411beb27" inline="no" kind="function" prot="public" role="contextspecific" static="no" tag="TAG" type="TYPE" virt="non-virtual">
+    <type>void</type>
+    <definition>void foo</definition>
+    <argsstring>()</argsstring>
+    <name>foo</name>
+    <briefdescription>
+    <para>A function.</para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inbodydescription>
+    </inbodydescription>
+    <location column="6" declcolumn="6" declfile="include/hardware/gpio.h" declline="232" file="include/hardware/gpio.h" line="232"/>
+    </memberdef>"""
+    node = Node(BeautifulSoup(xml, "xml").memberdef)
+
+    assert (
+        node.attributes()
+        == "#group_hardware_gpio_1ga5d7dbadb2233e2e6627e9101411beb27,role=contextspecific,tag=TAG,type=TYPE"
+    )
+
+
+def test_attributes_are_preserved_except_skipped():
+    xml = """<memberdef const="no" explicit="no" id="group__hardware__gpio_1ga5d7dbadb2233e2e6627e9101411beb27" inline="no" kind="function" prot="public" role="contextspecific" static="no" tag="TAG" type="TYPE" virt="non-virtual">
+    <type>void</type>
+    <definition>void foo</definition>
+    <argsstring>()</argsstring>
+    <name>foo</name>
+    <briefdescription>
+    <para>A function.</para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inbodydescription>
+    </inbodydescription>
+    <location column="6" declcolumn="6" declfile="include/hardware/gpio.h" declline="232" file="include/hardware/gpio.h" line="232"/>
+    </memberdef>"""
+    node = Node(BeautifulSoup(xml, "xml").memberdef)
+
+    assert node.attributes(skip=["id"]) == "role=contextspecific,tag=TAG,type=TYPE"
+
+
 def test_nodes_are_subscriptable():
     xml = """<para kind="group" id="not__sanitized">Hello</para>"""
     node = Node(BeautifulSoup(xml, "xml").para)

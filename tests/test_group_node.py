@@ -63,7 +63,7 @@ def test_to_asciidoc(tmp_path):
 
     assert asciidoc == dedent(
         """\
-        [[group_hardware_base,hardware_base]]
+        [#group_hardware_base,reftext="hardware_base"]
         ==== hardware_base
 
         ===== Detailed Description

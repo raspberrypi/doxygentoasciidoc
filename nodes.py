@@ -116,9 +116,11 @@ class Node:
             # Combine any adjacent text nodes since we modified the tree
             self.node.smooth()
 
-            return self.block_separator(**kwargs).join(
+            asciidoc_output = self.block_separator(**kwargs).join(
                 asciidoc for asciidoc in self.asciidoc_contents(**kwargs) if asciidoc
             )
+
+            return asciidoc_output
 
         return "".join(self.asciidoc_contents(**kwargs))
 
@@ -160,6 +162,19 @@ class Node:
             self.nodefor(child)(child, position=position, xmldir=self.xmldir)
             for position, child in enumerate(children)
         ]
+
+    def attributes(self, skip=[], **kwargs):
+        """Return an asciidoc string of any attributes specified, plus the node id."""
+        preserved_attributes = ["role", "tag", "type"]
+        atts = []
+        if self.node.get("id", None) is not None and "id" not in skip:
+            atts.append(f"#{sanitize(self.node.get('id'))}")
+        for att in preserved_attributes:
+            if self.node.get(att) is not None and att not in skip:
+                atts.append(f"{att}={self.node.get(att)}")
+        if len(atts) > 0:
+            return ','.join(atts)
+        return None
 
     def descendants(self, selector, **kwargs):
         """Return a list of descendant Nodes matching the given selector."""
@@ -267,13 +282,11 @@ class DoxygenindexNode(Node):
         output = []
         for module in self.rootmodules():
             title_ = module.node.text("title")
+            attributes = [f"#{sanitize(module.refid)}",f'reftext="{escape_text(title_)}"']
+            if self.attributes(skip=["id"]) is not None:
+                attributes.append(self.attributes(skip=["id"]))
             output.append(
-                "\n".join(
-                    (
-                        f"[[{sanitize(module.refid)},{escape_text(title_)}]]",
-                        title(title_, 2),
-                    )
-                )
+                title(title_, 2, ','.join(attributes)),
             )
             briefdescription = module.node.child("briefdescription").to_asciidoc(
                 **kwargs
@@ -406,12 +419,10 @@ class GroupNode(Node):
 
     def __output_title(self, **kwargs):
         title_ = self.text("title")
-        return "\n".join(
-            (
-                f"[[{self.id},{title_}]]",
-                title(title_, 3 + kwargs.get("depth", 0)),
-            )
-        )
+        attributes = ["#"+self.id,f'reftext="{escape_text(title_)}"']
+        if self.attributes(skip=["id"]) is not None:
+            attributes.append(self.attributes(skip=["id"]))
+        return title(title_, 3 + kwargs.get("depth", 0), ','.join(attributes))
 
     def __output_briefdescription(self, **kwargs):
         kwargs["depth"] = 2 + kwargs.get("depth", 0)
@@ -598,7 +609,8 @@ class NonbreakablespaceNode(Node):
 
 class SectNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "\n".join((f"[#{self.id}]", super().to_asciidoc(**kwargs)))
+        attributes = f"[{self.attributes()}]"
+        return "\n".join((attributes, super().to_asciidoc(**kwargs)))
 
 
 class TitleNode(Node):
@@ -670,7 +682,7 @@ class ParameterlistNode(Node):
 
 class ParameternamelistNode(Node):
     def to_asciidoc(self, **kwargs):
-        return f"`{escape_text(self.text('parametername'))}`::"
+        return f"`{escape_text(self.text('parametername')).rstrip()}`::"
 
 
 class ParameterdescriptionNode(Node):
@@ -706,7 +718,7 @@ class BoldNode(Node):
 
 class ComputeroutputNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("`", super().to_asciidoc(**kwargs), "`"))
+        return "".join(("`", super().to_asciidoc(**kwargs).rstrip(), "`"))
 
 
 class ItemizedlistNode(Node):
@@ -762,7 +774,9 @@ class DetaileddescriptionNode(Node):
         contents = super().to_asciidoc(**kwargs)
         if contents:
             if not kwargs.get("documentation", False):
-                output.append(title("Detailed Description", 2 + kwargs.get("depth", 0)))
+                output.append(
+                    title("Detailed Description", 2 + kwargs.get("depth", 0), self.attributes())
+                )
             output.append(contents)
             return "\n\n".join(output)
         return ""
@@ -771,14 +785,10 @@ class DetaileddescriptionNode(Node):
 class FunctionMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(
-                        self.text("name"),
-                        5 + kwargs.get("depth", 0),
-                    ),
-                )
+            title(
+                self.text("name"),
+                5 + kwargs.get("depth", 0),
+                self.attributes()
             )
         ]
         if self.node["static"] == "yes":
@@ -806,6 +816,8 @@ class FunctionMemberdefNode(Node):
         if suffix:
             definition.append(" ")
             definition.append(", ".join(suffix))
+        # make sure there are no trailing spaces
+        definition[-1] = definition[-1].rstrip()
         definition.append("`")
         output.append("".join(definition))
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
@@ -822,17 +834,13 @@ class FunctionMemberdefNode(Node):
 class TypedefMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(
-                        self.text("name"),
-                        5 + kwargs.get("depth", 0),
-                    ),
-                )
+            title(
+                self.text("name"),
+                5 + kwargs.get("depth", 0),
+                self.attributes()
             )
         ]
-        output.append(f"`{escape_text(self.text('definition'))}`")
+        output.append(f"`{escape_text(self.text('definition')).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -848,18 +856,14 @@ class EnumMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         name = self.text("name")
         output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(
-                        name or "anonymous enum",
-                        5 + kwargs.get("depth", 0),
-                    ),
-                )
+            title(
+                name or "anonymous enum",
+                5 + kwargs.get("depth", 0),
+                self.attributes()
             )
         ]
         if name:
-            output.append(f"`enum {escape_text(name)}`")
+            output.append(f"`enum {escape_text(name).rstrip()}`")
         else:
             output.append("`anonymous enum`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
@@ -897,12 +901,7 @@ class VariableMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         name = self.text("name") or self.text("qualifiedname")
         output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(name, 5 + kwargs.get("depth", 0)),
-                )
-            )
+            title(name, 5 + kwargs.get("depth", 0), self.attributes()),
         ]
         definition = self.text("definition")
         if self.text("initializer"):
@@ -918,7 +917,7 @@ class VariableMemberdefNode(Node):
                 )
             )
         else:
-            output.append(f"`{escape_text(definition)}`")
+            output.append(f"`{escape_text(definition).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -933,14 +932,10 @@ class VariableMemberdefNode(Node):
 class DefineMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            "\n".join(
-                (
-                    f"[#{self.id}]",
-                    title(
-                        self.text("name"),
-                        5 + kwargs.get("depth", 0),
-                    ),
-                )
+            title(
+                self.text("name"),
+                5 + kwargs.get("depth", 0),
+                self.attributes()
             )
         ]
         name = self.text("name")
@@ -964,10 +959,10 @@ class DefineMemberdefNode(Node):
                 )
             else:
                 output.append(
-                    f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer)}`"
+                    f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
                 )
         else:
-            output.append(f"`#define {escape_text(name)}{escape_text(argsstring)}`")
+            output.append(f"`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -1006,7 +1001,7 @@ class FunctionSectiondefNode(Node):
             function.append(
                 f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>> "
             )
-            function.append(f"{escape_text(memberdef.text('argsstring'))}`:: ")
+            function.append(f"{escape_text(memberdef.text('argsstring')).rstrip()}`:: ")
             briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 function.append(briefdescription)

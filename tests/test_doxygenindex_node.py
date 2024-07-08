@@ -6,7 +6,7 @@ from doxygentoasciidoc.nodes import DoxygenindexNode
 def test_to_asciidoc(tmp_path):
     with open(f"{tmp_path}/group__hardware.xml", "w", encoding="utf-8") as hardware:
         hardware.write(
-            """\
+            """
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__hardware" kind="group">
@@ -78,9 +78,11 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").doxygenindex, xmldir=tmp_path
     ).to_asciidoc()
 
+    print(asciidoc)
+
     assert asciidoc == dedent(
         """\
-        [[group_hardware,Hardware APIs]]
+        [#group_hardware,reftext="Hardware APIs"]
         === Hardware APIs
 
         This group of libraries provides a thin and efficient C API / abstractions to access the RP2040 hardware without having to read and write hardware registers directly.
@@ -94,7 +96,7 @@ def test_to_asciidoc(tmp_path):
         |DMA channel configuration.
         |===
 
-        [[group_hardware_base,hardware_base]]
+        [#group_hardware_base,reftext="hardware_base"]
         ==== hardware_base
 
         ===== Detailed Description
@@ -107,7 +109,7 @@ def test_to_asciidoc(tmp_path):
 
         <<group_channel_config,channel_config>>:: DMA channel configuration.
 
-        [[group_channel_config,channel_config]]
+        [#group_channel_config,reftext="channel_config"]
         ===== channel_config
 
         DMA channel configuration."""
