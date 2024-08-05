@@ -173,7 +173,7 @@ class Node:
             if self.node.get(att) is not None and att not in skip:
                 atts.append(f"{att}={self.node.get(att)}")
         if len(atts) > 0:
-            return ','.join(atts)
+            return ",".join(atts)
         return None
 
     def descendants(self, selector, **kwargs):
@@ -184,6 +184,14 @@ class Node:
                 self.node(selector, recursive=True, **kwargs)
             )
         ]
+
+    @staticmethod
+    def has_page_parent(element):
+        return any(
+            parent.get("kind", "") == "page"
+            for parent in element.parents
+            if parent.name == "compounddef"
+        )
 
     def text(self, selector=None):
         """Return the stripped text of the given child."""
@@ -206,31 +214,7 @@ class Node:
 
     def nodefor(self, element):
         """Return the appropriate Node class for a given element."""
-        if element.name == "compounddef":
-            return {
-                "group": GroupNode,
-            }[element["kind"]]
-
-        if element.name == "sectiondef":
-            return {
-                "define": DefineSectiondefNode,
-                "enum": EnumSectiondefNode,
-                "typedef": TypedefSectiondefNode,
-                "func": FunctionSectiondefNode,
-                "var": VariableSectiondefNode,
-                "user-defined": UserDefinedSectiondefNode,
-            }[element["kind"]]
-
-        if element.name == "memberdef":
-            return {
-                "define": DefineMemberdefNode,
-                "enum": EnumMemberdefNode,
-                "typedef": TypedefMemberdefNode,
-                "function": FunctionMemberdefNode,
-                "variable": VariableMemberdefNode,
-            }[element["kind"]]
-
-        return {
+        defaults = {
             "anchor": AnchorNode,
             "bold": BoldNode,
             "briefdescription": Node,
@@ -238,7 +222,10 @@ class Node:
             "description": Node,
             "codeline": CodelineNode,
             "compound": Node,
+            "compounddef": SectNode,
+            "compoundname": TitleNode,
             "computeroutput": ComputeroutputNode,
+            "copy": CopyrightNode,
             "emphasis": EmphasisNode,
             "entry": EntryNode,
             "enumvalue": Node,
@@ -248,6 +235,7 @@ class Node:
             "innerclass": InnerclassNode,
             "itemizedlist": ItemizedlistNode,
             "listitem": ListitemNode,
+            "location": Node,
             "mdash": MdashNode,
             "ndash": NdashNode,
             "nonbreakablespace": NonbreakablespaceNode,
@@ -272,7 +260,39 @@ class Node:
             "ulink": UlinkNode,
             "verbatim": VerbatimNode,
             None: Node,
-        }[element.name]
+        }
+
+        if element.name == "compounddef":
+            return {"group": GroupNode, "page": SectNode}[element["kind"]]
+
+        if element.name == "sectiondef":
+            return {
+                "define": DefineSectiondefNode,
+                "enum": EnumSectiondefNode,
+                "typedef": TypedefSectiondefNode,
+                "func": FunctionSectiondefNode,
+                "var": VariableSectiondefNode,
+                "user-defined": UserDefinedSectiondefNode,
+            }[element["kind"]]
+
+        if element.name == "memberdef":
+            return {
+                "define": DefineMemberdefNode,
+                "enum": EnumMemberdefNode,
+                "typedef": TypedefMemberdefNode,
+                "function": FunctionMemberdefNode,
+                "variable": VariableMemberdefNode,
+            }[element["kind"]]
+
+        special_cases = ["title", "detaileddescription", "compoundname"]
+        if element.name in special_cases and self.has_page_parent(element):
+            return {
+                "title": HeadingNode,
+                "detaileddescription": SimplesectNode,
+                "compoundname": NoneNode,
+            }[element.name]
+
+        return defaults[element.name]
 
 
 class DoxygenindexNode(Node):
@@ -282,11 +302,14 @@ class DoxygenindexNode(Node):
         output = []
         for module in self.rootmodules():
             title_ = module.node.text("title")
-            attributes = [f"#{sanitize(module.refid)}",f'reftext="{escape_text(title_)}"']
+            attributes = [
+                f"#{sanitize(module.refid)}",
+                f'reftext="{escape_text(title_)}"',
+            ]
             if self.attributes(skip=["id"]) is not None:
                 attributes.append(self.attributes(skip=["id"]))
             output.append(
-                title(title_, 2, ','.join(attributes)),
+                title(title_, 2, ",".join(attributes)),
             )
             briefdescription = module.node.child("briefdescription").to_asciidoc(
                 **kwargs
@@ -419,10 +442,10 @@ class GroupNode(Node):
 
     def __output_title(self, **kwargs):
         title_ = self.text("title")
-        attributes = ["#"+self.id,f'reftext="{escape_text(title_)}"']
+        attributes = ["#" + self.id, f'reftext="{escape_text(title_)}"']
         if self.attributes(skip=["id"]) is not None:
             attributes.append(self.attributes(skip=["id"]))
-        return title(title_, 3 + kwargs.get("depth", 0), ','.join(attributes))
+        return title(title_, 3 + kwargs.get("depth", 0), ",".join(attributes))
 
     def __output_briefdescription(self, **kwargs):
         kwargs["depth"] = 2 + kwargs.get("depth", 0)
@@ -618,43 +641,56 @@ class TitleNode(Node):
         return "".join((".", super().to_asciidoc(**kwargs)))
 
 
+class HeadingNode(Node):
+    def to_asciidoc(self, **kwargs):
+        levels = {
+            "compounddef": "== ",
+            "sect1": "=== ",
+            "sect2": "==== ",
+            "sect3": "===== ",
+        }
+        # get the parent section level
+        parent = self.node.parent
+        return "".join((levels[parent.name], super().to_asciidoc(**kwargs)))
+
+
 class SimplesectNode(Node):
     def to_asciidoc(self, **kwargs):
         previous_node = self.previous_node()
         next_node = self.next_node()
-        if self.node["kind"] == "see":
+        if self.node.get("kind", "") == "see":
             output = []
             if not (
                 previous_node
                 and previous_node.name == "simplesect"
-                and previous_node["kind"] == "see"
+                and previous_node.get("kind", "") == "see"
             ):
                 output.append("--\n*See also*\n\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
                 next_node
                 and next_node.name == "simplesect"
-                and next_node["kind"] == "see"
+                and next_node.get("kind", "") == "see"
             ):
                 output.append("\n--")
             return "".join(output)
 
-        if self.node["kind"] == "return":
+        if self.node.get("kind", "") == "return":
             return "".join(("--\n*Returns*\n\n", super().to_asciidoc(**kwargs), "\n--"))
 
-        if self.node["kind"] == "note":
+        if self.node.get("kind", "") == "note":
             output = []
             if not (
                 previous_node
                 and previous_node.name == "simplesect"
-                and previous_node["kind"] == "note"
+                and previous_node.get("kind", "") == "note"
             ):
                 output.append("[NOTE]\n====\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
                 next_node
                 and next_node.name == "simplesect"
-                and next_node["kind"] == "note"
+                and next_node.get("kind", "") == "note"
             ):
                 output.append("\n====")
 
@@ -716,6 +752,11 @@ class BoldNode(Node):
         return "".join(("*", super().to_asciidoc(**kwargs), "*"))
 
 
+class CopyrightNode(Node):
+    def to_asciidoc(self, **kwargs):
+        return "©"
+
+
 class ComputeroutputNode(Node):
     def to_asciidoc(self, **kwargs):
         return "".join(("`", super().to_asciidoc(**kwargs).rstrip(), "`"))
@@ -775,7 +816,11 @@ class DetaileddescriptionNode(Node):
         if contents:
             if not kwargs.get("documentation", False):
                 output.append(
-                    title("Detailed Description", 2 + kwargs.get("depth", 0), self.attributes())
+                    title(
+                        "Detailed Description",
+                        2 + kwargs.get("depth", 0),
+                        self.attributes(),
+                    )
                 )
             output.append(contents)
             return "\n\n".join(output)
@@ -785,11 +830,7 @@ class DetaileddescriptionNode(Node):
 class FunctionMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            title(
-                self.text("name"),
-                5 + kwargs.get("depth", 0),
-                self.attributes()
-            )
+            title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
         if self.node["static"] == "yes":
             definition = ["`static "]
@@ -834,11 +875,7 @@ class FunctionMemberdefNode(Node):
 class TypedefMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            title(
-                self.text("name"),
-                5 + kwargs.get("depth", 0),
-                self.attributes()
-            )
+            title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
         output.append(f"`{escape_text(self.text('definition')).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
@@ -857,9 +894,7 @@ class EnumMemberdefNode(Node):
         name = self.text("name")
         output = [
             title(
-                name or "anonymous enum",
-                5 + kwargs.get("depth", 0),
-                self.attributes()
+                name or "anonymous enum", 5 + kwargs.get("depth", 0), self.attributes()
             )
         ]
         if name:
@@ -932,11 +967,7 @@ class VariableMemberdefNode(Node):
 class DefineMemberdefNode(Node):
     def to_asciidoc(self, **kwargs):
         output = [
-            title(
-                self.text("name"),
-                5 + kwargs.get("depth", 0),
-                self.attributes()
-            )
+            title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
         name = self.text("name")
         params = [param.text() for param in self.children("param")]
@@ -962,7 +993,9 @@ class DefineMemberdefNode(Node):
                     f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
                 )
         else:
-            output.append(f"`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`")
+            output.append(
+                f"`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`"
+            )
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -1178,3 +1211,8 @@ class UserDefinedSectiondefNode(Node):
             members.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(members))
         return "\n\n".join(output)
+
+
+class NoneNode(Node):
+    def to_asciidoc(self, **kwargs):
+        return ""
