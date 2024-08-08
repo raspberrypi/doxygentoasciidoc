@@ -132,7 +132,7 @@ def test_to_details_asciidoc(tmp_path):
         [#group_hardware_exception_1ga504f1c3a5a6959d430665f5d72cf335a]
         ====== exception_number
 
-        `enum exception_number`
+        [.memname]`enum exception_number`
 
         Exception number definitions."""
     )

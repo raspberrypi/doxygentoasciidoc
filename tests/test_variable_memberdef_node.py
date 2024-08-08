@@ -31,7 +31,7 @@ def test_to_asciidoc(tmp_path):
         [#group_hardware_i2c_1ga56c7844696c095a3ad088100df011fd2]
         ====== i2c0_inst
 
-        `i2c_inst_t i2c0_inst`
+        [.memname]`i2c_inst_t i2c0_inst`
 
         The I2C identifiers for use in I2C functions.
 
@@ -66,7 +66,7 @@ def test_to_asciidoc_with_no_name(tmp_path):
         [#structirq_handler_chain_slot_1a75f171191a7a92cb2eb1b4cf1569690a]
         ====== irq_handler_chain_slot
 
-        `union irq_handler_chain_slot irq_handler_chain_slot`"""
+        [.memname]`union irq_handler_chain_slot irq_handler_chain_slot`"""
     )
 
 

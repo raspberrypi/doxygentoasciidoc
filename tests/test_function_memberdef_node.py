@@ -57,7 +57,7 @@ def test_to_asciidoc_with_multiple_args(tmp_path):
         [#group_interp_config_1ga30d763b581c679c02cefe2fa90d8c8a7]
         ====== interp_config_set_shift
 
-        `static void interp_config_set_shift (<<structinterp_config,interp_config>> ++*++ c, uint shift) [inline], [static]`
+        [.memname]`static void interp_config_set_shift (<<structinterp_config,interp_config>> ++*++ c, uint shift) [inline], [static]`
 
         Set the interpolator shift value.
 
@@ -116,7 +116,7 @@ def test_to_asciidoc_with_see_also(tmp_path):
         [#group_repeating_timer_1ga9ad5a07a3f2300cc9d46c1c847fae6f1]
         ====== cancel_repeating_timer
 
-        `bool cancel_repeating_timer (<<structrepeating_timer,repeating_timer_t>> ++*++ timer)`
+        [.memname]`bool cancel_repeating_timer (<<structrepeating_timer,repeating_timer_t>> ++*++ timer)`
 
         Cancel a repeating timer.
 
@@ -192,7 +192,7 @@ def test_to_asciidoc_with_ref_in_type(tmp_path):
         [#group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4]
         ====== hw_set_bits
 
-        `static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void hw_set_bits (io_rw_32 ++*++ addr, uint32_t mask) [static]`
+        [.memname]`static <<group_pico_platform_1ga23eadd8d1642fb8fe4600708c36e116a,++__force_inline++>> void hw_set_bits (io_rw_32 ++*++ addr, uint32_t mask) [static]`
 
         Atomically set the specified bits to 1 in a HW register.
 

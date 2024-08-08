@@ -194,7 +194,7 @@ def test_to_details_asciidoc(tmp_path):
         [#group_hardware_adc_1ga2b815e6730e8723a6d1d06d9ef8f31c0]
         ====== adc_init
 
-        `void adc_init (void)`
+        [.memname]`void adc_init (void)`
 
         Initialise the ADC HW."""
     )

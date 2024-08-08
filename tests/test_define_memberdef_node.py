@@ -29,7 +29,7 @@ def test_to_asciidoc(tmp_path):
         [#group_hardware_pio_1ga916d05e71da7f2173cd22b46bbfa0a11]
         ====== pio0
 
-        `#define pio0 pio0_hw`
+        [.memname]`#define pio0 pio0_hw`
 
         Identifier for the first (PIO 0) hardware PIO instance (for use in PIO functions).
 
@@ -62,7 +62,7 @@ def test_to_asciidoc_with_no_initializer(tmp_path):
         [#group_hardware_pio_1ga923a261ba19804c404900228e99c9522]
         ====== pio1
 
-        `#define pio1`
+        [.memname]`#define pio1`
 
         Identifier for the second (PIO 1) hardware PIO instance (for use in PIO functions).
 

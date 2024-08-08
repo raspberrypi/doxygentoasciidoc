@@ -64,5 +64,5 @@ def test_to_details_asciidoc():
         [#float_init_rom_8c_1aea98df4cf9adff2a025dc4a09c814986]
         ====== sf_table
 
-        `uint32_t sf_table[SF_TABLE_V2_SIZE/2]`"""
+        [.memname]`uint32_t sf_table[SF_TABLE_V2_SIZE/2]`"""
     )

@@ -132,7 +132,7 @@ def test_to_details_asciidoc(tmp_path):
         [#group_hardware_clocks_1ga60fddc9bfe13c979c8e3a777d0d89037]
         ====== resus_callback_t
 
-        `typedef void(++*++ resus_callback_t) (void)`
+        [.memname]`typedef void(++*++ resus_callback_t) (void)`
 
         Resus callback function type.
 

@@ -833,9 +833,9 @@ class FunctionMemberdefNode(Node):
             title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
         if self.node["static"] == "yes":
-            definition = ["`static "]
+            definition = ["[.memname]`static "]
         else:
-            definition = ["`"]
+            definition = ["[.memname]`"]
         definition.append(self.child("type").to_asciidoc(**kwargs))
         definition.append(f" {escape_text(self.text('name'))} ")
         params = self.children("param")
@@ -877,7 +877,7 @@ class TypedefMemberdefNode(Node):
         output = [
             title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
-        output.append(f"`{escape_text(self.text('definition')).rstrip()}`")
+        output.append(f"[.memname]`{escape_text(self.text('definition')).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -898,9 +898,9 @@ class EnumMemberdefNode(Node):
             )
         ]
         if name:
-            output.append(f"`enum {escape_text(name).rstrip()}`")
+            output.append(f"[.memname]`enum {escape_text(name).rstrip()}`")
         else:
-            output.append("`anonymous enum`")
+            output.append("[.memname]`anonymous enum`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -952,7 +952,7 @@ class VariableMemberdefNode(Node):
                 )
             )
         else:
-            output.append(f"`{escape_text(definition).rstrip()}`")
+            output.append(f"[.memname]`{escape_text(definition).rstrip()}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -990,11 +990,11 @@ class DefineMemberdefNode(Node):
                 )
             else:
                 output.append(
-                    f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
+                    f"[.memname]`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
                 )
         else:
             output.append(
-                f"`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`"
+                f"[.memname]`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`"
             )
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
