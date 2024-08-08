@@ -116,11 +116,9 @@ class Node:
             # Combine any adjacent text nodes since we modified the tree
             self.node.smooth()
 
-            asciidoc_output = self.block_separator(**kwargs).join(
+            return self.block_separator(**kwargs).join(
                 asciidoc for asciidoc in self.asciidoc_contents(**kwargs) if asciidoc
             )
-
-            return asciidoc_output
 
         return "".join(self.asciidoc_contents(**kwargs))
 
@@ -718,7 +716,7 @@ class ParameterlistNode(Node):
 
 class ParameternamelistNode(Node):
     def to_asciidoc(self, **kwargs):
-        return f"`{escape_text(self.text('parametername')).rstrip()}`::"
+        return f"`{escape_text(self.text('parametername'))}`::"
 
 
 class ParameterdescriptionNode(Node):
@@ -877,7 +875,7 @@ class TypedefMemberdefNode(Node):
         output = [
             title(self.text("name"), 5 + kwargs.get("depth", 0), self.attributes())
         ]
-        output.append(f"`{escape_text(self.text('definition')).rstrip()}`")
+        output.append(f"`{escape_text(self.text('definition'))}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -898,7 +896,7 @@ class EnumMemberdefNode(Node):
             )
         ]
         if name:
-            output.append(f"`enum {escape_text(name).rstrip()}`")
+            output.append(f"`enum {escape_text(name)}`")
         else:
             output.append("`anonymous enum`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
@@ -952,7 +950,7 @@ class VariableMemberdefNode(Node):
                 )
             )
         else:
-            output.append(f"`{escape_text(definition).rstrip()}`")
+            output.append(f"`{escape_text(definition)}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -993,9 +991,7 @@ class DefineMemberdefNode(Node):
                     f"`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
                 )
         else:
-            output.append(
-                f"`#define {escape_text(name)}{escape_text(argsstring).rstrip()}`"
-            )
+            output.append(f"`#define {escape_text(name)}{escape_text(argsstring)}`")
         kwargs["depth"] = 5 + kwargs.get("depth", 0)
         kwargs["documentation"] = True
         briefdescription = self.child("briefdescription").to_asciidoc(**kwargs)
@@ -1034,7 +1030,7 @@ class FunctionSectiondefNode(Node):
             function.append(
                 f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>> "
             )
-            function.append(f"{escape_text(memberdef.text('argsstring')).rstrip()}`:: ")
+            function.append(f"{escape_text(memberdef.text('argsstring'))}`:: ")
             briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 function.append(briefdescription)
