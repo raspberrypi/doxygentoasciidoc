@@ -6,7 +6,7 @@ from doxygentoasciidoc.nodes import DoxygenindexNode
 def test_to_asciidoc(tmp_path):
     with open(f"{tmp_path}/group__hardware.xml", "w", encoding="utf-8") as hardware:
         hardware.write(
-            """
+            """\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__hardware" kind="group">
@@ -77,8 +77,6 @@ def test_to_asciidoc(tmp_path):
     asciidoc = DoxygenindexNode(
         BeautifulSoup(xml, "xml").doxygenindex, xmldir=tmp_path
     ).to_asciidoc()
-
-    print(asciidoc)
 
     assert asciidoc == dedent(
         """\
