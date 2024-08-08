@@ -36,7 +36,7 @@ def test_to_asciidoc():
         [#group_cyw43_ll_1ga6f0d5ac786e2c0a86b360310c3d5e25c]
         ====== CYW43_AUTH_OPEN
 
-        `#define CYW43_AUTH_OPEN (0)`
+        [.memname]`#define CYW43_AUTH_OPEN (0)`
 
         No authorisation required (open)"""
     )

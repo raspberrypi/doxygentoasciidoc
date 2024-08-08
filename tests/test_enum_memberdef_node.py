@@ -101,7 +101,7 @@ def test_to_asciidoc(tmp_path):
         [#group_hardware_exception_1ga504f1c3a5a6959d430665f5d72cf335a]
         ====== exception_number
 
-        `enum exception_number`
+        [.memname]`enum exception_number`
 
         Exception number definitions.
 
@@ -197,7 +197,7 @@ def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path)
         [#group_hardware_gpio_1ga14eba84c1c8f80b08a770775d3bf060a]
         ====== gpio_drive_strength
 
-        `enum gpio_drive_strength`
+        [.memname]`enum gpio_drive_strength`
 
         Drive strength levels for GPIO outputs.
 
@@ -268,7 +268,7 @@ def test_to_asciidoc_with_anonymous_enum(tmp_path):
         [#group_cyw43_ll_1gadf764cbdea00d65edcd07bb9953ad2b7]
         ====== anonymous enum
 
-        `anonymous enum`
+        [.memname]`anonymous enum`
 
         Network interface types [[group_cyw43_ll_1CYW43_ITF_]].
 
