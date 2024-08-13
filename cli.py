@@ -17,7 +17,7 @@ def main():
     filename = args.file
     output_filename = args.output
     is_child = args.child
-    if filename and output_filename:
+    if filename:
         xmldir = os.path.dirname(filename)
         with open(filename, encoding="utf-8") as xml:
             if is_child:
@@ -28,8 +28,11 @@ def main():
                 result = DoxygenindexNode(
                     BeautifulSoup(xml, "xml").doxygenindex, xmldir=xmldir
                 ).to_asciidoc()
-        with open(output_filename, "w", encoding="utf-8") as output:
-            output.write(result)
+        if output_filename is not None:
+            with open(output_filename, "w", encoding="utf-8") as output:
+                output.write(result)
+        else:
+            print(result)
 
     else:
         sys.exit(1)
