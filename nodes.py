@@ -163,8 +163,10 @@ class Node:
             for position, child in enumerate(children)
         ]
 
-    def attributes(self, skip=[], **kwargs):
+    def attributes(self, skip=None):
         """Return an asciidoc string of any attributes specified, plus the node id."""
+        if skip is None:
+            skip = []
         preserved_attributes = ["role", "tag", "type"]
         atts = []
         if self.node.get("id", None) is not None and "id" not in skip:
@@ -395,6 +397,7 @@ class DoxygenindexNode(Node):
 
 class GroupNode(Node):
     def to_asciidoc(self, **kwargs):
+        # pylint: disable=too-many-locals,too-many-branches
         output = [self.__output_title(**kwargs)]
         briefdescription = self.__output_briefdescription(**kwargs)
         if briefdescription:
@@ -990,7 +993,8 @@ class DefineMemberdefNode(Node):
                 )
             else:
                 output.append(
-                    f"[.memname]`#define {escape_text(name)}{escape_text(argsstring)} {escape_text(initializer).rstrip()}`"
+                    f"[.memname]`#define {escape_text(name)}{escape_text(argsstring)} "
+                    f"{escape_text(initializer).rstrip()}`"
                 )
         else:
             output.append(
@@ -1063,7 +1067,8 @@ class TypedefSectiondefNode(Node):
         for memberdef in self.children("memberdef", kind="typedef"):
             type_ = memberdef.child("type").to_asciidoc(**kwargs)
             typedef = [
-                f"`typedef {type_} <<{memberdef.id},{escape_text(memberdef.text('name'))}>>{escape_text(memberdef.text('argsstring'))}`::"
+                f"`typedef {type_} <<{memberdef.id},{escape_text(memberdef.text('name'))}>>"
+                f"{escape_text(memberdef.text('argsstring'))}`::"
             ]
             briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
@@ -1148,7 +1153,8 @@ class DefineSectiondefNode(Node):
             else:
                 argsstring = ""
             macro = [
-                f"* `#define <<{memberdef.id},{escape_text(memberdef.text('name'))}>>{escape_text(argsstring)}"
+                f"* `#define <<{memberdef.id},{escape_text(memberdef.text('name'))}>>"
+                f"{escape_text(argsstring)}"
             ]
             if memberdef.text("initializer"):
                 initializer = memberdef.child("initializer").to_asciidoc(

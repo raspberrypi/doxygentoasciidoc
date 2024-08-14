@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-import yaml
 
 from bs4 import BeautifulSoup
 from .nodes import Node, DoxygenindexNode
@@ -10,9 +9,19 @@ from .nodes import Node, DoxygenindexNode
 def main():
     """Convert the given Doxygen index.xml to AsciiDoc and output the result."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file", help="The path of the file to convert", default=None)
-    parser.add_argument("-o", "--output", help="The path of the output file", default=None)
-    parser.add_argument("-c", "--child", help="Is NOT the root index file", default=False, action='store_true')
+    parser.add_argument(
+        "-f", "--file", help="The path of the file to convert", default=None
+    )
+    parser.add_argument(
+        "-o", "--output", help="The path of the output file", default=None
+    )
+    parser.add_argument(
+        "-c",
+        "--child",
+        help="Is NOT the root index file",
+        default=False,
+        action="store_true",
+    )
     args = parser.parse_args()
     filename = args.file
     output_filename = args.output

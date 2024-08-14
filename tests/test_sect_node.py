@@ -33,7 +33,9 @@ def test_compounddef_kind_page_is_processed_as_sect(tmp_path):
     </detaileddescription>
     </compounddef>"""
 
-    asciidoc = Node(BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path).to_asciidoc()
+    asciidoc = Node(
+        BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path
+    ).to_asciidoc()
 
     assert asciidoc == dedent(
         """\
