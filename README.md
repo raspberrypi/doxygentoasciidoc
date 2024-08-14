@@ -11,3 +11,23 @@ Allowed args:
 `-c`: process a node other than `doxygenindex`
 
 The following attributes from the XML will be preserved in the generated asciidoc: role, tag, type.
+
+## Development
+
+Run the test suite:
+
+```console
+$ pytest
+```
+
+Ensure code is formatted consistently:
+
+```console
+$ black --check .
+```
+
+Ensure code passes linting:
+
+```console
+$ pylint doxygentoasciidoc
+```
