@@ -1191,8 +1191,12 @@ class VariableSectiondefNode(Node):
             variable = ["`"]
             variable.append(memberdef.child("type").to_asciidoc(**kwargs))
             variable.append(
-                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>>`:: "
+                f" <<{memberdef.id},{escape_text(memberdef.text('name'))}>>"
             )
+            argsstring = memberdef.text("argsstring")
+            if argsstring:
+                variable.append(argsstring)
+            variable.append("`:: ")
             briefdescription = memberdef.child("briefdescription").to_asciidoc(**kwargs)
             if briefdescription:
                 variable.append(briefdescription)
