@@ -214,7 +214,29 @@ class Node:
 
     def nodefor(self, element):
         """Return the appropriate Node class for a given element."""
-        defaults = {
+        if element.name == "compounddef":
+            return {"group": GroupNode, "page": PageNode}[element["kind"]]
+
+        if element.name == "sectiondef":
+            return {
+                "define": DefineSectiondefNode,
+                "enum": EnumSectiondefNode,
+                "typedef": TypedefSectiondefNode,
+                "func": FunctionSectiondefNode,
+                "var": VariableSectiondefNode,
+                "user-defined": UserDefinedSectiondefNode,
+            }[element["kind"]]
+
+        if element.name == "memberdef":
+            return {
+                "define": DefineMemberdefNode,
+                "enum": EnumMemberdefNode,
+                "typedef": TypedefMemberdefNode,
+                "function": FunctionMemberdefNode,
+                "variable": VariableMemberdefNode,
+            }[element["kind"]]
+
+        return {
             "anchor": AnchorNode,
             "bold": BoldNode,
             "briefdescription": Node,
@@ -222,8 +244,6 @@ class Node:
             "description": Node,
             "codeline": CodelineNode,
             "compound": Node,
-            "compounddef": SectNode,
-            "compoundname": TitleNode,
             "computeroutput": ComputeroutputNode,
             "copy": CopyrightNode,
             "emphasis": EmphasisNode,
@@ -235,7 +255,6 @@ class Node:
             "innerclass": InnerclassNode,
             "itemizedlist": ItemizedlistNode,
             "listitem": ListitemNode,
-            "location": Node,
             "mdash": MdashNode,
             "ndash": NdashNode,
             "nonbreakablespace": NonbreakablespaceNode,
@@ -260,39 +279,7 @@ class Node:
             "ulink": UlinkNode,
             "verbatim": VerbatimNode,
             None: Node,
-        }
-
-        if element.name == "compounddef":
-            return {"group": GroupNode, "page": SectNode}[element["kind"]]
-
-        if element.name == "sectiondef":
-            return {
-                "define": DefineSectiondefNode,
-                "enum": EnumSectiondefNode,
-                "typedef": TypedefSectiondefNode,
-                "func": FunctionSectiondefNode,
-                "var": VariableSectiondefNode,
-                "user-defined": UserDefinedSectiondefNode,
-            }[element["kind"]]
-
-        if element.name == "memberdef":
-            return {
-                "define": DefineMemberdefNode,
-                "enum": EnumMemberdefNode,
-                "typedef": TypedefMemberdefNode,
-                "function": FunctionMemberdefNode,
-                "variable": VariableMemberdefNode,
-            }[element["kind"]]
-
-        special_cases = ["title", "detaileddescription", "compoundname"]
-        if element.name in special_cases and self.has_page_parent(element):
-            return {
-                "title": HeadingNode,
-                "detaileddescription": SimplesectNode,
-                "compoundname": NoneNode,
-            }[element.name]
-
-        return defaults[element.name]
+        }[element.name]
 
 
 class DoxygenindexNode(Node):
@@ -535,6 +522,34 @@ class GroupNode(Node):
         return "\n\n".join(output)
 
 
+class PageNode(Node):
+    def to_asciidoc(self, **kwargs):
+        output = []
+
+        title_ = self.__output_title(**kwargs)
+        if title_:
+            output.append(title_)
+
+        detaileddescription = self.__output_detaileddescription(**kwargs)
+        if detaileddescription:
+            output.append(detaileddescription)
+
+        return "\n\n".join(output)
+
+    def __output_title(self, **kwargs):
+        title_ = self.text("title")
+        attributes = ["#" + self.id]
+        if title_:
+            return title(title_, 1 + kwargs.get("depth", 0), ",".join(attributes))
+        return None
+
+    def __output_detaileddescription(self, **kwargs):
+        kwargs["depth"] = 1 + kwargs.get("depth", 0)
+        return self.child("detaileddescription").to_asciidoc(
+            documentation=True, **kwargs
+        )
+
+
 class InnergroupNode(Node):
     def to_asciidoc(self, **kwargs):
         with open(
@@ -633,26 +648,14 @@ class NonbreakablespaceNode(Node):
 
 class SectNode(Node):
     def to_asciidoc(self, **kwargs):
+        kwargs["depth"] = 1 + kwargs.get("depth", 0)
         attributes = f"[{self.attributes()}]"
         return "\n".join((attributes, super().to_asciidoc(**kwargs)))
 
 
 class TitleNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join((".", super().to_asciidoc(**kwargs)))
-
-
-class HeadingNode(Node):
-    def to_asciidoc(self, **kwargs):
-        levels = {
-            "compounddef": "== ",
-            "sect1": "=== ",
-            "sect2": "==== ",
-            "sect3": "===== ",
-        }
-        # get the parent section level
-        parent = self.node.parent
-        return "".join((levels[parent.name], super().to_asciidoc(**kwargs)))
+        return title(super().to_asciidoc(**kwargs), kwargs.get("depth", 0))
 
 
 class SimplesectNode(Node):
@@ -1219,8 +1222,3 @@ class UserDefinedSectiondefNode(Node):
             members.append(memberdef.to_asciidoc(**kwargs))
         output.append("\n".join(members))
         return "\n\n".join(output)
-
-
-class NoneNode(Node):
-    def to_asciidoc(self, **kwargs):
-        return ""

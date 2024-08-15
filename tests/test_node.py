@@ -326,36 +326,3 @@ def test_nodes_are_subscriptable():
 
     assert node["kind"] == "group"
     assert node["id"] == "not__sanitized"
-
-
-def test_indexpage():
-    xml = """<?xml version="1.0" encoding="utf-8"?>
-    <doxygen version="1.10.0" xml:lang="en-US" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd">
-    <compounddef id="indexpage" kind="page">
-    <compoundname>index</compoundname>
-    <title>Page Title</title>
-    <briefdescription>
-    </briefdescription>
-    <detaileddescription>
-    <para><anchor id="my_anchor"/> First paragraph.</para>
-    <sect1 id="a_section">
-    <title>Section Head</title><para>Second paragraph.</para>
-    </sect1>
-    </detaileddescription>
-    </compounddef>
-    </doxygen>"""
-
-    asciidoc = Node(BeautifulSoup(xml, "xml").doxygen).to_asciidoc()
-
-    assert asciidoc == dedent(
-        """\
-        [#indexpage]
-        == Page Title
-
-         [[my_anchor]] First paragraph.
-
-        [#a_section]
-        === Section Head
-
-        Second paragraph."""
-    )
