@@ -24,9 +24,9 @@ def test_to_asciidoc():
       </sectiondef>
     """
 
-    asciidoc = VariableSectiondefNode(
-        BeautifulSoup(xml, "xml").sectiondef
-    ).to_asciidoc()
+    asciidoc = VariableSectiondefNode(BeautifulSoup(xml, "xml").sectiondef).to_asciidoc(
+        depth=4
+    )
 
     assert asciidoc == dedent(
         """\
@@ -57,7 +57,7 @@ def test_to_details_asciidoc():
 
     asciidoc = VariableSectiondefNode(
         BeautifulSoup(xml, "xml").sectiondef
-    ).to_details_asciidoc()
+    ).to_details_asciidoc(depth=4)
 
     assert asciidoc == dedent(
         """\
@@ -115,9 +115,9 @@ def test_bug():
         </sectiondef>
       """
 
-    asciidoc = VariableSectiondefNode(
-        BeautifulSoup(xml, "xml").sectiondef
-    ).to_asciidoc()
+    asciidoc = VariableSectiondefNode(BeautifulSoup(xml, "xml").sectiondef).to_asciidoc(
+        depth=4
+    )
 
     assert asciidoc == dedent(
         """\

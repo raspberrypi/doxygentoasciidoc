@@ -94,7 +94,7 @@ def test_to_asciidoc(tmp_path):
 
     asciidoc = EnumMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -190,7 +190,7 @@ def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path)
 
     asciidoc = EnumMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -261,7 +261,7 @@ def test_to_asciidoc_with_anonymous_enum(tmp_path):
 
     asciidoc = EnumMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\

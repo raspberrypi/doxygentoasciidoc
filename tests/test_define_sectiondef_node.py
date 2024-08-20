@@ -54,7 +54,7 @@ def test_to_asciidoc(tmp_path):
 
     asciidoc = DefineSectiondefNode(
         BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=4)
 
     assert asciidoc == dedent(
         """\
@@ -87,7 +87,7 @@ def test_to_details_asciidoc(tmp_path):
 
     asciidoc = DefineSectiondefNode(
         BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
-    ).to_details_asciidoc()
+    ).to_details_asciidoc(depth=4)
 
     assert asciidoc == dedent(
         """\

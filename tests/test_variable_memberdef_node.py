@@ -24,7 +24,7 @@ def test_to_asciidoc(tmp_path):
 
     asciidoc = VariableMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -59,7 +59,7 @@ def test_to_asciidoc_with_no_name(tmp_path):
 
     asciidoc = VariableMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -94,7 +94,7 @@ def test_to_asciidoc_with_initializer(tmp_path):
 
     asciidoc = VariableMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\

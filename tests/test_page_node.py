@@ -38,7 +38,7 @@ def test_page_node_with_example_page(tmp_path):
 
     asciidoc = PageNode(
         BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=1)
 
     assert asciidoc == dedent(
         """\
@@ -157,7 +157,7 @@ def test_page_node_with_indexpage(tmp_path):
 
     asciidoc = PageNode(
         BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=1)
 
     assert asciidoc == dedent(
         """\
