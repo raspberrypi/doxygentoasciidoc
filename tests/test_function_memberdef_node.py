@@ -50,7 +50,7 @@ def test_to_asciidoc_with_multiple_args(tmp_path):
 
     asciidoc = FunctionMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -109,7 +109,7 @@ def test_to_asciidoc_with_see_also(tmp_path):
 
     asciidoc = FunctionMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -185,7 +185,7 @@ def test_to_asciidoc_with_ref_in_type(tmp_path):
 
     asciidoc = FunctionMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\

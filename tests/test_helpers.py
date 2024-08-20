@@ -33,8 +33,24 @@ def test_sanitize_replaces_multiple_leading_underscores():
     assert sanitize("___foo__bar") == "_foo_bar"
 
 
+def test_title_with_level_0():
+    assert title("Level 0 Section Title", 0) == "= Level 0 Section Title"
+
+
 def test_title_with_level_1():
     assert title("Level 1 Section Title", 1) == "== Level 1 Section Title"
+
+
+def test_title_with_level_2():
+    assert title("Level 2 Section Title", 2) == "=== Level 2 Section Title"
+
+
+def test_title_with_level_3():
+    assert title("Level 3 Section Title", 3) == "==== Level 3 Section Title"
+
+
+def test_title_with_level_4():
+    assert title("Level 4 Section Title", 4) == "===== Level 4 Section Title"
 
 
 def test_title_with_level_5():
@@ -43,6 +59,10 @@ def test_title_with_level_5():
 
 def test_title_with_level_6():
     assert title("Level 6 Section Title", 6) == "[.h6]\n*Level 6 Section Title*"
+
+
+def test_title_with_level_7():
+    assert title("Level 7 Section Title", 7) == "[.h6]\n*Level 7 Section Title*"
 
 
 def test_title_escapes_text():

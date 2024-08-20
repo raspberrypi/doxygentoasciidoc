@@ -76,7 +76,7 @@ def test_to_asciidoc(tmp_path):
 
     asciidoc = DoxygenindexNode(
         BeautifulSoup(xml, "xml").doxygenindex, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=2)
 
     assert asciidoc == dedent(
         """\

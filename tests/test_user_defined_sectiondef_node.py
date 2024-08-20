@@ -25,7 +25,7 @@ def test_to_asciidoc():
     """
     asciidoc = UserDefinedSectiondefNode(
         BeautifulSoup(xml, "xml").sectiondef
-    ).to_asciidoc()
+    ).to_asciidoc(depth=4)
 
     assert asciidoc == dedent(
         """\

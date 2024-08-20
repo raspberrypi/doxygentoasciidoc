@@ -24,7 +24,7 @@ def test_to_asciidoc(tmp_path):
 
     asciidoc = TypedefMemberdefNode(
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\

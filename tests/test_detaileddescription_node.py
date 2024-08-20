@@ -11,7 +11,7 @@ def test_to_asciidoc_includes_title(tmp_path):
 
     asciidoc = DetaileddescriptionNode(
         BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=2)
 
     assert asciidoc == dedent(
         """\
@@ -29,7 +29,7 @@ def test_to_asciidoc_respects_depth(tmp_path):
 
     asciidoc = DetaileddescriptionNode(
         BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc(depth=3)
+    ).to_asciidoc(depth=5)
 
     assert asciidoc == dedent(
         """\
@@ -46,7 +46,7 @@ def test_to_asciidoc_writes_nothing_if_the_description_is_empty(tmp_path):
 
     asciidoc = DetaileddescriptionNode(
         BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=2)
 
     assert asciidoc == ""
 
@@ -59,7 +59,7 @@ def test_to_asciidoc_does_not_include_title_if_documentation_is_true(tmp_path):
 
     asciidoc = DetaileddescriptionNode(
         BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc(documentation=True)
+    ).to_asciidoc(depth=2, documentation=True)
 
     assert asciidoc == "The main `*pico_lwip* library`"
 
@@ -74,7 +74,7 @@ def test_to_asciidoc_handling_whitespace(tmp_path):
 
     asciidoc = DetaileddescriptionNode(
         BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc(documentation=True)
+    ).to_asciidoc(depth=2, documentation=True)
 
     assert asciidoc == dedent(
         """\

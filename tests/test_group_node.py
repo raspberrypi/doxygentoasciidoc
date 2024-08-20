@@ -59,7 +59,7 @@ def test_to_asciidoc(tmp_path):
   </compounddef>"""
     asciidoc = GroupNode(
         BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path
-    ).to_asciidoc()
+    ).to_asciidoc(depth=3)
 
     assert asciidoc == dedent(
         """\

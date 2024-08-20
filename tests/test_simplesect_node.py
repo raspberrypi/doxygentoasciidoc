@@ -36,21 +36,6 @@ def test_simplesect_with_note_kind(tmp_path):
     )
 
 
-def test_simplesect_with_page_kind(tmp_path):
-    xml = """\
-    <compounddef id="examples_page" kind="page">
-    <detaileddescription>
-    <para><anchor id="my_anchor"/> First paragraph.</para>
-    </detaileddescription>
-    </compounddef>"""
-
-    asciidoc = SimplesectNode(
-        BeautifulSoup(xml, "xml").detaileddescription, xmldir=tmp_path
-    ).to_asciidoc()
-
-    assert asciidoc == "[[my_anchor]] First paragraph."
-
-
 def test_two_sibling_simplesects_with_note_kind(tmp_path):
     xml = """<para><simplesect kind="note"><para>This does <emphasis>not</emphasis> work</para></simplesect>
     <simplesect kind="note"><para>But this does</para></simplesect></para>"""

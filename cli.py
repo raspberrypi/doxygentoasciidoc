@@ -32,11 +32,11 @@ def main():
             if is_child:
                 result = Node(
                     BeautifulSoup(xml, "xml").doxygen, xmldir=xmldir
-                ).to_asciidoc()
+                ).to_asciidoc(depth=1)
             else:
                 result = DoxygenindexNode(
                     BeautifulSoup(xml, "xml").doxygenindex, xmldir=xmldir
-                ).to_asciidoc()
+                ).to_asciidoc(depth=2)
         if output_filename is not None:
             with open(output_filename, "w", encoding="utf-8") as output:
                 output.write(result)
