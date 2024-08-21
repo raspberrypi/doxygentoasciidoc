@@ -19,19 +19,41 @@ def sanitize(identifier):
 
 
 def title(text, level, attributes=None):
-    """Return text formatted as a title with the given level."""
-    if level > 5:
-        if attributes is not None:
-            if re.search(r"([,\s]role=)", attributes) is not None:
-                attributes = re.sub(
-                    r"([,\s]role=)(.*?[,\s]?$)", "\\1h6 \\2", attributes
-                )
-            else:
-                attributes += ",role=h6"
-            return f"[{attributes}]\n*{escape_text(text)}*"
-        return f"[.h6]\n*{escape_text(text)}*"
+    """Return text formatted as a title with the given level and attributes."""
+    if attributes is None:
+        attributes = {}
 
-    marker = "=" * (level + 1)
-    if attributes is not None:
-        return f"[{attributes}]\n{marker} {escape_text(text)}"
-    return f"{marker} {escape_text(text)}"
+    attrlist = []
+
+    if "id" in attributes:
+        attrlist.append(f"#{sanitize(attributes.pop('id'))}")
+
+    roles = []
+
+    if level > 5:
+        roles.append("h6")
+    if "role" in attributes:
+        roles.append(attributes.pop("role"))
+
+    if roles:
+        attrlist.append(f"role={' '.join(roles)}")
+
+    if "tag" in attributes:
+        attrlist.append(f"tag={escape_text(attributes.pop('tag'))}")
+    if "type" in attributes:
+        attrlist.append(f"type={escape_text(attributes.pop('type'))}")
+    for key, value in attributes.items():
+        attrlist.append(f'{escape_text(key)}="{escape_text(value)}"')
+
+    output = []
+
+    if attrlist:
+        output.append(f"[{','.join(attrlist)}]")
+
+    if level > 5:
+        output.append(f"*{escape_text(text)}*")
+    else:
+        marker = "=" * (level + 1)
+        output.append(f"{marker} {escape_text(text)}")
+
+    return "\n".join(output)

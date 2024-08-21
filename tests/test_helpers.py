@@ -58,11 +58,11 @@ def test_title_with_level_5():
 
 
 def test_title_with_level_6():
-    assert title("Level 6 Section Title", 6) == "[.h6]\n*Level 6 Section Title*"
+    assert title("Level 6 Section Title", 6) == "[role=h6]\n*Level 6 Section Title*"
 
 
 def test_title_with_level_7():
-    assert title("Level 7 Section Title", 7) == "[.h6]\n*Level 7 Section Title*"
+    assert title("Level 7 Section Title", 7) == "[role=h6]\n*Level 7 Section Title*"
 
 
 def test_title_escapes_text():
@@ -70,4 +70,90 @@ def test_title_escapes_text():
 
 
 def test_title_escapes_text_with_level_6():
-    assert title("3 * 2 = 6", 6) == "[.h6]\n*3 ++*++ 2 = 6*"
+    assert title("3 * 2 = 6", 6) == "[role=h6]\n*3 ++*++ 2 = 6*"
+
+
+def test_title_with_id():
+    assert (
+        title("Title", 1, attributes={"id": "group__foo"}) == "[#group_foo]\n== Title"
+    )
+
+
+def test_title_with_role():
+    assert (
+        title("Title", 1, attributes={"role": "contextspecific"})
+        == "[role=contextspecific]\n== Title"
+    )
+
+
+def test_title_with_level_6_and_role():
+    assert (
+        title("Title", 6, attributes={"role": "contextspecific"})
+        == "[role=h6 contextspecific]\n*Title*"
+    )
+
+
+def test_title_with_tag_and_type():
+    assert (
+        title("Title", 1, attributes={"type": "TYPE", "tag": "TAG"})
+        == "[tag=TAG,type=TYPE]\n== Title"
+    )
+
+
+def test_title_with_all_attributes():
+    assert (
+        title(
+            "Title",
+            1,
+            attributes={
+                "id": "group__foo",
+                "role": "contextspecific",
+                "tag": "TAG",
+                "type": "TYPE",
+            },
+        )
+        == "[#group_foo,role=contextspecific,tag=TAG,type=TYPE]\n== Title"
+    )
+
+
+def test_title_with_level_6_and_all_attributes():
+    assert (
+        title(
+            "Title",
+            6,
+            attributes={
+                "id": "group__foo",
+                "role": "contextspecific",
+                "tag": "TAG",
+                "type": "TYPE",
+            },
+        )
+        == "[#group_foo,role=h6 contextspecific,tag=TAG,type=TYPE]\n*Title*"
+    )
+
+
+def test_title_with_arbitrary_attributes():
+    assert (
+        title(
+            "Title",
+            1,
+            attributes={
+                "foo": "bar",
+                "baz": "quux",
+            },
+        )
+        == '[foo="bar",baz="quux"]\n== Title'
+    )
+
+
+def test_title_with_attribute_with_space():
+    assert (
+        title(
+            "Title",
+            1,
+            attributes={
+                "foo": "bar baz",
+            },
+        )
+        == '[foo="bar baz"]\n== Title'
+    )

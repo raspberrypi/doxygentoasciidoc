@@ -29,7 +29,6 @@ class Node:
         "sect3",
         "simplesect",
         "table",
-        "title",
         "verbatim",
     )
 
@@ -161,20 +160,13 @@ class Node:
             for position, child in enumerate(children)
         ]
 
-    def attributes(self, skip=None):
-        """Return an asciidoc string of any attributes specified, plus the node id."""
-        if skip is None:
-            skip = []
-        preserved_attributes = ["role", "tag", "type"]
-        atts = []
-        if self.node.get("id", None) is not None and "id" not in skip:
-            atts.append(f"#{sanitize(self.node.get('id'))}")
-        for att in preserved_attributes:
-            if self.node.get(att) is not None and att not in skip:
-                atts.append(f"{att}={self.node.get(att)}")
-        if len(atts) > 0:
-            return ",".join(atts)
-        return None
+    def attributes(self):
+        """Return the attributes for this node."""
+        return {
+            key: self.node.attrs.get(key)
+            for key in ("id", "role", "type", "tag")
+            if key in self.node.attrs
+        }
 
     def descendants(self, selector, **kwargs):
         """Return a list of descendant Nodes matching the given selector."""
@@ -184,14 +176,6 @@ class Node:
                 self.node(selector, recursive=True, **kwargs)
             )
         ]
-
-    @staticmethod
-    def has_page_parent(element):
-        return any(
-            parent.get("kind", "") == "page"
-            for parent in element.parents
-            if parent.name == "compounddef"
-        )
 
     def text(self, selector=None):
         """Return the stripped text of the given child."""
@@ -274,7 +258,6 @@ class Node:
             "simplesect": SimplesectNode,
             "sp": SpNode,
             "table": TableNode,
-            "title": TitleNode,
             "type": Node,
             "ulink": UlinkNode,
             "verbatim": VerbatimNode,
@@ -289,14 +272,16 @@ class DoxygenindexNode(Node):
         output = []
         for module in self.rootmodules():
             title_ = module.node.text("title")
-            attributes = [
-                f"#{sanitize(module.refid)}",
-                f'reftext="{escape_text(title_)}"',
-            ]
-            if self.attributes(skip=["id"]) is not None:
-                attributes.append(self.attributes(skip=["id"]))
             output.append(
-                title(title_, depth, ",".join(attributes)),
+                title(
+                    title_,
+                    depth,
+                    attributes={
+                        **self.attributes(),
+                        "id": module.refid,
+                        "reftext": title_,
+                    },
+                ),
             )
             briefdescription = module.node.child("briefdescription").to_asciidoc(
                 **kwargs, depth=depth
@@ -433,10 +418,7 @@ class GroupNode(Node):
 
     def __output_title(self, depth=0):
         title_ = self.text("title")
-        attributes = ["#" + self.id, f'reftext="{escape_text(title_)}"']
-        if self.attributes(skip=["id"]) is not None:
-            attributes.append(self.attributes(skip=["id"]))
-        return title(title_, depth, ",".join(attributes))
+        return title(title_, depth, attributes={**self.attributes(), "reftext": title_})
 
     def __output_briefdescription(self, **kwargs):
         return self.child("briefdescription").to_asciidoc(**kwargs)
@@ -539,9 +521,8 @@ class PageNode(Node):
 
     def __output_title(self, depth=0):
         title_ = self.text("title")
-        attributes = ["#" + self.id]
         if title_:
-            return title(title_, depth, ",".join(attributes))
+            return title(title_, depth, attributes=self.attributes())
         return None
 
     def __output_detaileddescription(self, **kwargs):
@@ -648,13 +629,16 @@ class NonbreakablespaceNode(Node):
 
 class SectNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
-        attributes = f"[{self.attributes()}]"
-        return "\n".join((attributes, super().to_asciidoc(**kwargs, depth=depth + 1)))
+        output = []
 
+        title_ = self.text("title")
+        if title_:
+            output.append(title(title_, depth + 1, attributes=self.attributes()))
 
-class TitleNode(Node):
-    def to_asciidoc(self, depth=0, **kwargs):
-        return title(super().to_asciidoc(**kwargs), depth)
+        for child in self.children(["para", "sect2", "sect3"]):
+            output.append(child.to_asciidoc(**kwargs, depth=depth + 1))
+
+        return "\n\n".join(output)
 
 
 class SimplesectNode(Node):
@@ -822,7 +806,7 @@ class DetaileddescriptionNode(Node):
                     title(
                         "Detailed Description",
                         depth,
-                        self.attributes(),
+                        attributes=self.attributes(),
                     )
                 )
             output.append(contents)
@@ -832,7 +816,7 @@ class DetaileddescriptionNode(Node):
 
 class FunctionMemberdefNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
-        output = [title(self.text("name"), depth, self.attributes())]
+        output = [title(self.text("name"), depth, attributes=self.attributes())]
         if self.node["static"] == "yes":
             definition = ["[.memname]`static "]
         else:
@@ -875,7 +859,7 @@ class FunctionMemberdefNode(Node):
 
 class TypedefMemberdefNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
-        output = [title(self.text("name"), depth, self.attributes())]
+        output = [title(self.text("name"), depth, attributes=self.attributes())]
         output.append(f"[.memname]`{escape_text(self.text('definition'))}`")
         briefdescription = self.child("briefdescription").to_asciidoc(
             **kwargs, depth=depth
@@ -893,7 +877,7 @@ class TypedefMemberdefNode(Node):
 class EnumMemberdefNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
         name = self.text("name")
-        output = [title(name or "anonymous enum", depth, self.attributes())]
+        output = [title(name or "anonymous enum", depth, attributes=self.attributes())]
         if name:
             output.append(f"[.memname]`enum {escape_text(name)}`")
         else:
@@ -935,7 +919,7 @@ class VariableMemberdefNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
         name = self.text("name") or self.text("qualifiedname")
         output = [
-            title(name, depth, self.attributes()),
+            title(name, depth, attributes=self.attributes()),
         ]
         definition = self.text("definition")
         if self.text("initializer"):
@@ -967,7 +951,7 @@ class VariableMemberdefNode(Node):
 
 class DefineMemberdefNode(Node):
     def to_asciidoc(self, depth=0, **kwargs):
-        output = [title(self.text("name"), depth, self.attributes())]
+        output = [title(self.text("name"), depth, attributes=self.attributes())]
         name = self.text("name")
         params = [param.text() for param in self.children("param")]
         if params:
