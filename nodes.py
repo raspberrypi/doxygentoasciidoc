@@ -762,7 +762,7 @@ class CopyrightNode(Node):
 
 class ComputeroutputNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("`", super().to_asciidoc(**kwargs).rstrip(), "`"))
+        return "".join(("`", super().to_asciidoc(**kwargs), "`"))
 
 
 class ItemizedlistNode(Node):
@@ -858,8 +858,6 @@ class FunctionMemberdefNode(Node):
         if suffix:
             definition.append(" ")
             definition.append(", ".join(suffix))
-        # make sure there are no trailing spaces
-        definition[-1] = definition[-1].rstrip()
         definition.append("`")
         output.append("".join(definition))
         briefdescription = self.child("briefdescription").to_asciidoc(
