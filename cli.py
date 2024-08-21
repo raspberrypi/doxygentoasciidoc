@@ -1,5 +1,4 @@
 import os
-import sys
 import argparse
 
 from bs4 import BeautifulSoup
@@ -8,40 +7,42 @@ from .nodes import Node, DoxygenindexNode
 
 def main():
     """Convert the given Doxygen index.xml to AsciiDoc and output the result."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-f", "--file", help="The path of the file to convert", default=None
+    parser = argparse.ArgumentParser(
+        prog="doxygentoasciidoc", description="Convert Doxygen XML to AsciiDoc"
     )
     parser.add_argument(
-        "-o", "--output", help="The path of the output file", default=None
+        "file",
+        type=argparse.FileType("r", encoding="utf-8"),
+        help="The path of the Doxygen XML file to convert",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Write to file instead of stdout",
     )
     parser.add_argument(
         "-c",
         "--child",
         help="Is NOT the root index file",
-        default=False,
         action="store_true",
     )
+
     args = parser.parse_args()
-    filename = args.file
-    output_filename = args.output
-    is_child = args.child
-    if filename:
-        xmldir = os.path.dirname(filename)
-        with open(filename, encoding="utf-8") as xml:
-            if is_child:
-                result = Node(
-                    BeautifulSoup(xml, "xml").doxygen, xmldir=xmldir
-                ).to_asciidoc(depth=1)
-            else:
-                result = DoxygenindexNode(
-                    BeautifulSoup(xml, "xml").doxygenindex, xmldir=xmldir
-                ).to_asciidoc(depth=2)
-        if output_filename is not None:
-            with open(output_filename, "w", encoding="utf-8") as output:
+
+    with args.file as file:
+        xmldir = os.path.dirname(file.name)
+
+        if args.child:
+            result = Node(
+                BeautifulSoup(file, "xml").doxygen, xmldir=xmldir
+            ).to_asciidoc(depth=1)
+        else:
+            result = DoxygenindexNode(
+                BeautifulSoup(file, "xml").doxygenindex, xmldir=xmldir
+            ).to_asciidoc(depth=2)
+
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as output:
                 output.write(result)
         else:
             print(result)
-
-    else:
-        sys.exit(1)

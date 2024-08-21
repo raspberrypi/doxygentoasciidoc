@@ -1,16 +1,19 @@
-# doxygentoasciidoc: A Doxygen > Asciidoc Converter
+# doxygentoasciidoc: A Doxygen to AsciiDoc Converter
 
-This project converts doxygen XML output to asciidoc.
+```
+usage: doxygentoasciidoc [-h] [-o OUTPUT] [-c] file
 
-Allowed args:
+Convert Doxygen XML to AsciiDoc
 
-`-f`: the full path to the file to be converted
+positional arguments:
+  file                  The path of the Doxygen XML file to convert
 
-`-o`: the full path the the output file (will print to STDOUT if not specified)
-
-`-c`: process a node other than `doxygenindex`
-
-The following attributes from the XML will be preserved in the generated asciidoc: role, tag, type.
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Write to file instead of stdout
+  -c, --child           Is NOT the root index file
+```
 
 ## Development
 
