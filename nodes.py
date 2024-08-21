@@ -645,7 +645,9 @@ class SimplesectNode(Node):
     def to_asciidoc(self, **kwargs):
         previous_node = self.previous_node()
         next_node = self.next_node()
-        if self.node.get("kind") == "see":
+        kind = self.node.get("kind")
+
+        if kind == "see":
             output = []
             if not (
                 previous_node
@@ -662,10 +664,10 @@ class SimplesectNode(Node):
                 output.append("\n--")
             return "".join(output)
 
-        if self.node.get("kind") == "return":
+        if kind == "return":
             return f"--\n*Returns*\n\n{super().to_asciidoc(**kwargs)}\n--"
 
-        if self.node.get("kind") == "note":
+        if kind == "note":
             output = []
             if not (
                 previous_node
