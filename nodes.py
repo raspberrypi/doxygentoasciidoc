@@ -588,7 +588,7 @@ class ProgramlistingNode(Node):
 class VerbatimNode(Node):
     def to_asciidoc(self, **kwargs):
         kwargs["programlisting"] = True
-        return "".join(("[source,c]\n----\n", super().to_asciidoc(**kwargs), "----"))
+        return f"[source,c]\n----\n{super().to_asciidoc(**kwargs)}----"
 
 
 class CodelineNode(Node):
@@ -619,7 +619,7 @@ class MdashNode(Node):
 
 class UlinkNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join((f"{self.node['url']}[", super().to_asciidoc(**kwargs), "]"))
+        return f"{self.node['url']}[{super().to_asciidoc(**kwargs)}]"
 
 
 class NonbreakablespaceNode(Node):
@@ -663,7 +663,7 @@ class SimplesectNode(Node):
             return "".join(output)
 
         if self.node.get("kind") == "return":
-            return "".join(("--\n*Returns*\n\n", super().to_asciidoc(**kwargs), "\n--"))
+            return f"--\n*Returns*\n\n{super().to_asciidoc(**kwargs)}\n--"
 
         if self.node.get("kind") == "note":
             output = []
@@ -731,12 +731,12 @@ class RefNode(Node):
 
 class EmphasisNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("_", super().to_asciidoc(**kwargs), "_"))
+        return f"_{super().to_asciidoc(**kwargs)}_"
 
 
 class BoldNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("*", super().to_asciidoc(**kwargs), "*"))
+        return f"*{super().to_asciidoc(**kwargs)}*"
 
 
 class CopyrightNode(Node):
@@ -746,7 +746,7 @@ class CopyrightNode(Node):
 
 class ComputeroutputNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("`", super().to_asciidoc(**kwargs), "`"))
+        return f"`{super().to_asciidoc(**kwargs)}`"
 
 
 class ItemizedlistNode(Node):
@@ -781,7 +781,7 @@ class ListitemNode(Node):
 
 class TableNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("|===\n", super().to_asciidoc(**kwargs), "\n|==="))
+        return f"|===\n{super().to_asciidoc(**kwargs)}\n|==="
 
 
 class RowNode(Node):
@@ -793,7 +793,7 @@ class RowNode(Node):
 
 class EntryNode(Node):
     def to_asciidoc(self, **kwargs):
-        return "".join(("|", super().to_asciidoc(**kwargs)))
+        return f"|{super().to_asciidoc(**kwargs)}"
 
 
 class DetaileddescriptionNode(Node):
