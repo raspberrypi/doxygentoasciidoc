@@ -645,39 +645,39 @@ class SimplesectNode(Node):
     def to_asciidoc(self, **kwargs):
         previous_node = self.previous_node()
         next_node = self.next_node()
-        if self.node.get("kind", "") == "see":
+        if self.node.get("kind") == "see":
             output = []
             if not (
                 previous_node
                 and previous_node.name == "simplesect"
-                and previous_node.get("kind", "") == "see"
+                and previous_node.get("kind") == "see"
             ):
                 output.append("--\n*See also*\n\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
                 next_node
                 and next_node.name == "simplesect"
-                and next_node.get("kind", "") == "see"
+                and next_node.get("kind") == "see"
             ):
                 output.append("\n--")
             return "".join(output)
 
-        if self.node.get("kind", "") == "return":
+        if self.node.get("kind") == "return":
             return "".join(("--\n*Returns*\n\n", super().to_asciidoc(**kwargs), "\n--"))
 
-        if self.node.get("kind", "") == "note":
+        if self.node.get("kind") == "note":
             output = []
             if not (
                 previous_node
                 and previous_node.name == "simplesect"
-                and previous_node.get("kind", "") == "note"
+                and previous_node.get("kind") == "note"
             ):
                 output.append("[NOTE]\n====\n")
             output.append(super().to_asciidoc(**kwargs))
             if not (
                 next_node
                 and next_node.name == "simplesect"
-                and next_node.get("kind", "") == "note"
+                and next_node.get("kind") == "note"
             ):
                 output.append("\n====")
 
