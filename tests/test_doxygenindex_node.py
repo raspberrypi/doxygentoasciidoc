@@ -33,6 +33,7 @@ def test_to_asciidoc(tmp_path):
     <compoundname>hardware_base</compoundname>
     <title>hardware_base</title>
     <innergroup refid="group__channel__config">channel_config</innergroup>
+    <innergroup refid="group__sm__config">sm_config</innergroup>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
@@ -62,6 +63,25 @@ def test_to_asciidoc(tmp_path):
 </doxygen>
             """
         )
+    with open(
+        f"{tmp_path}/group__sm__config.xml", "w", encoding="utf-8"
+    ) as channel_config:
+        channel_config.write(
+            """\
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
+  <compounddef id="group__sm__config" kind="group">
+    <compoundname>sm_config</compoundname>
+    <title>sm_config</title>
+    <briefdescription>
+<para>PIO state machine configuration.</para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+  </compoundef>
+</doxygen>
+            """
+        )
     xml = """\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.9.7" xml:lang="en-US">
@@ -70,6 +90,8 @@ def test_to_asciidoc(tmp_path):
 <compound refid="group__hardware__base" kind="group"><name>hardware_base</name>
 </compound>
 <compound refid="group__channel__config" kind="group"><name>channel_config</name>
+</compound>
+<compound refid="group__sm__config" kind="group"><name>sm_config</name>
 </compound>
 </doxygenindex>
     """
@@ -92,6 +114,9 @@ def test_to_asciidoc(tmp_path):
 
         |{nbsp}{nbsp}{nbsp}{nbsp}<<group_channel_config,channel_config>>
         |DMA channel configuration.
+
+        |{nbsp}{nbsp}{nbsp}{nbsp}<<group_sm_config,sm_config>>
+        |PIO state machine configuration.
         |===
 
         [#group_hardware_base,reftext="hardware_base"]
@@ -106,9 +131,15 @@ def test_to_asciidoc(tmp_path):
         ===== Modules
 
         <<group_channel_config,channel_config>>:: DMA channel configuration.
+        <<group_sm_config,sm_config>>:: PIO state machine configuration.
 
         [#group_channel_config,reftext="channel_config"]
         ===== channel_config
 
-        DMA channel configuration."""
+        DMA channel configuration.
+
+        [#group_sm_config,reftext="sm_config"]
+        ===== sm_config
+
+        PIO state machine configuration."""
     )
