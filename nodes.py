@@ -239,6 +239,7 @@ class Node:
             "innerclass": InnerclassNode,
             "itemizedlist": ItemizedlistNode,
             "listitem": ListitemNode,
+            "linebreak": LinebreakNode,
             "mdash": MdashNode,
             "ndash": NdashNode,
             "nonbreakablespace": NonbreakablespaceNode,
@@ -779,6 +780,11 @@ class ListitemNode(Node):
         if kwargs.get("ordereddepth", 0) + kwargs.get("unordereddepth", 0) == 1:
             return "\n\n"
         return "\n+\n"
+
+
+class LinebreakNode(Node):
+    def to_asciidoc(self, **kwargs):
+        return " +\n"
 
 
 class TableNode(Node):
