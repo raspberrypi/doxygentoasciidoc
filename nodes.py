@@ -686,6 +686,20 @@ class SimplesectNode(Node):
 
             return "".join(output)
 
+        if kind == "par":
+            output = []
+
+            title_ = self.text("title")
+            if title_:
+                output.append(f"*{escape_text(title_)}*")
+
+            for para in self.children("para"):
+                asciidoc = para.to_asciidoc(**kwargs)
+                if asciidoc:
+                    output.append(asciidoc)
+
+            return "\n\n".join(output)
+
         return super().to_asciidoc(**kwargs)
 
 
