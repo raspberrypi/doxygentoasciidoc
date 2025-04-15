@@ -73,3 +73,35 @@ def test_two_sibling_simplesects_with_see_kind(tmp_path):
         <<bar,bar()>>
         --"""
     )
+
+
+def test_simplesect_with_par_kind():
+    xml = """<simplesect kind="par"><title>LwIP HTTP server</title><para/>
+</simplesect>"""
+
+    asciidoc = SimplesectNode(BeautifulSoup(xml, "xml").simplesect).to_asciidoc()
+
+    assert asciidoc == """*LwIP HTTP server*"""
+
+
+def test_simplesect_with_par_kind_and_paragraph():
+    xml = """<simplesect kind="par"><title>LwIP HTTP server</title><para>Contents of the paragraph.</para>
+</simplesect>"""
+
+    asciidoc = SimplesectNode(BeautifulSoup(xml, "xml").simplesect).to_asciidoc()
+
+    assert asciidoc == dedent(
+        """\
+        *LwIP HTTP server*
+
+        Contents of the paragraph."""
+    )
+
+
+def test_simplesect_with_par_kind_paragraph_and_no_title():
+    xml = """<simplesect kind="par"><para>Contents of the paragraph.</para>
+</simplesect>"""
+
+    asciidoc = SimplesectNode(BeautifulSoup(xml, "xml").simplesect).to_asciidoc()
+
+    assert asciidoc == """Contents of the paragraph."""
