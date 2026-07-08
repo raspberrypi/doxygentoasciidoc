@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import TableNode
 
 
 def test_table_node_renders_tables(tmp_path):
-    xml = """
+    xml = """\
     <table><row>
     <entry thead="yes"><para>IRQ   </para>
     </entry><entry thead="yes"><para>Interrupt Source    </para>

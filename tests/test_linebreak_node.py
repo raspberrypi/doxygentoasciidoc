@@ -3,7 +3,7 @@ from doxygentoasciidoc.nodes import Node
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <para>Hello<linebreak/>
     </para>
     """

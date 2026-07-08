@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import OrderedlistNode
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <orderedlist>
     <listitem><para>Item the <emphasis>first</emphasis></para>
     </listitem><listitem><para>Item the <bold>second</bold></para>
@@ -29,7 +29,7 @@ def test_to_asciidoc(tmp_path):
 
 
 def test_to_asciidoc_with_nested_list(tmp_path):
-    xml = """
+    xml = """\
     <orderedlist>
     <listitem><para>5 input mux:<orderedlist>
     <listitem><para>4 inputs that are available</para>

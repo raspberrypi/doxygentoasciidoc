@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import ListitemNode
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -21,7 +21,7 @@ def test_to_asciidoc(tmp_path):
 
 
 def test_to_asciidoc_when_nested(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -36,7 +36,7 @@ def test_to_asciidoc_when_nested(tmp_path):
 
 
 def test_block_separator_at_top_level(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -48,7 +48,7 @@ def test_block_separator_at_top_level(tmp_path):
 
 
 def test_block_separator_when_nested(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 

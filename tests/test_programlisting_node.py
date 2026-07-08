@@ -23,7 +23,7 @@ def test_programlisting_node_renders_as_a_verbatim_code_block(tmp_path):
 
 
 def test_programlisting_node_includes_filename_as_comment_if_present(tmp_path):
-    xml = """
+    xml = """\
     <programlisting filename="hello.c"><codeline lineno="1"><highlight class="normal">print("Hello world")</highlight></codeline>
     </programlisting>"""
 

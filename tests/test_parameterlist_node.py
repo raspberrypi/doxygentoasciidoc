@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import ParameterlistNode
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <parameterlist kind="param"><parameteritem>
     <parameternamelist>
     <parametername>slice_num</parametername>
@@ -37,7 +37,7 @@ def test_to_asciidoc(tmp_path):
 
 
 def test_to_asciidoc_with_no_description(tmp_path):
-    xml = """
+    xml = """\
     <parameterlist kind="param"><parameteritem>
     <parameternamelist>
     <parametername>slice_num</parametername>
