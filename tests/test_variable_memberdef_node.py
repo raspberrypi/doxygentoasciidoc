@@ -26,8 +26,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_i2c_1ga56c7844696c095a3ad088100df011fd2]
         ====== i2c0_inst
 
@@ -35,8 +34,7 @@ def test_to_asciidoc(tmp_path):
 
         The I2C identifiers for use in I2C functions.
 
-        e.g. i2c_init(i2c0, 48000)"""
-    )
+        e.g. i2c_init(i2c0, 48000)""")
 
 
 def test_to_asciidoc_with_no_name(tmp_path):
@@ -61,13 +59,11 @@ def test_to_asciidoc_with_no_name(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#structirq_handler_chain_slot_1a75f171191a7a92cb2eb1b4cf1569690a]
         ====== irq_handler_chain_slot
 
-        [.memname]`union irq_handler_chain_slot irq_handler_chain_slot`"""
-    )
+        [.memname]`union irq_handler_chain_slot irq_handler_chain_slot`""")
 
 
 def test_to_asciidoc_with_initializer(tmp_path):
@@ -96,8 +92,7 @@ def test_to_asciidoc_with_initializer(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#pico_flash_2flash_8c_1a61d721f8bcbcf9ae65e69369b870ec4d]
         ====== default_flash_safety_helper
 
@@ -108,5 +103,4 @@ def test_to_asciidoc_with_initializer(tmp_path):
                 .enter_safe_zone_timeout_ms = default_enter_safe_zone_timeout_ms,
                 .exit_safe_zone_timeout_ms = default_exit_safe_zone_timeout_ms
         }
-        ----"""
-    )
+        ----""")

@@ -125,8 +125,7 @@ def test_to_details_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
     ).to_details_asciidoc(depth=4)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         ===== Enumeration Type Documentation
 
         [#group_hardware_exception_1ga504f1c3a5a6959d430665f5d72cf335a]
@@ -134,8 +133,7 @@ def test_to_details_asciidoc(tmp_path):
 
         [.memname]`enum exception_number`
 
-        Exception number definitions."""
-    )
+        Exception number definitions.""")
 
 
 def test_to_asciidoc_with_anonymous_enum(tmp_path):

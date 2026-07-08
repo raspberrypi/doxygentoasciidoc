@@ -187,8 +187,7 @@ def test_to_details_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
     ).to_details_asciidoc(depth=4)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         ===== Function Documentation
 
         [#group_hardware_adc_1ga2b815e6730e8723a6d1d06d9ef8f31c0]
@@ -196,5 +195,4 @@ def test_to_details_asciidoc(tmp_path):
 
         [.memname]`void adc_init (void)`
 
-        Initialise the ADC HW."""
-    )
+        Initialise the ADC HW.""")

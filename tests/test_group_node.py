@@ -61,8 +61,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").compounddef, xmldir=tmp_path
     ).to_asciidoc(depth=3)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_base,reftext="hardware_base"]
         ==== hardware_base
 
@@ -89,5 +88,4 @@ def test_to_asciidoc(tmp_path):
 
         [horizontal]
         `addr`:: Address of writable register
-        `mask`:: Bit-mask specifying bits to set"""
-    )
+        `mask`:: Bit-mask specifying bits to set""")

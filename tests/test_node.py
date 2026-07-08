@@ -129,15 +129,13 @@ def test_mixed_blocks_and_inline_elements(tmp_path):
     xml = """<para><simplesect kind="note"><para>This is important</para></simplesect> Hello <bold>world</bold></para>"""
     asciidoc = Node(BeautifulSoup(xml, "xml").para, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [NOTE]
         ====
         This is important
         ====
 
-        Hello *world*"""
-    )
+        Hello *world*""")
 
 
 def test_mixed_list_and_text(tmp_path):

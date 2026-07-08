@@ -96,8 +96,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_exception_1ga504f1c3a5a6959d430665f5d72cf335a]
         ====== exception_number
 
@@ -129,8 +128,7 @@ def test_to_asciidoc(tmp_path):
         |SYSTICK_EXCEPTION
         |-1
         |System Tick
-        |==="""
-    )
+        |===""")
 
 
 def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path):
@@ -192,8 +190,7 @@ def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path)
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_gpio_1ga14eba84c1c8f80b08a770775d3bf060a]
         ====== gpio_drive_strength
 
@@ -223,8 +220,7 @@ def test_to_asciidoc_generates_a_table_if_enumvalues_have_descriptions(tmp_path)
 
         |[[group_hardware_gpio_1gga14eba84c1c8f80b08a770775d3bf060aa418f6be7649c316bab248b91c2eb1716]]GPIO_DRIVE_STRENGTH_12MA
         |12 mA nominal drive strength
-        |==="""
-    )
+        |===""")
 
 
 def test_to_asciidoc_with_anonymous_enum(tmp_path):
@@ -263,8 +259,7 @@ def test_to_asciidoc_with_anonymous_enum(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_cyw43_ll_1gadf764cbdea00d65edcd07bb9953ad2b7]
         ====== anonymous enum
 
@@ -280,5 +275,4 @@ def test_to_asciidoc_with_anonymous_enum(tmp_path):
 
         |[[group_cyw43_ll_1ggadf764cbdea00d65edcd07bb9953ad2b7add57ac73ff47f04da4f09a7aaeb7eb90]]CYW43_ITF_AP
         |Access point (AP) interface mode.
-        |==="""
-    )
+        |===""")

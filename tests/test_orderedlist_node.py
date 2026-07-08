@@ -14,8 +14,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").orderedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         . {empty}
         +
         --
@@ -26,8 +25,7 @@ def test_to_asciidoc(tmp_path):
         +
         --
         Item the *second*
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_nested_list(tmp_path):
@@ -43,8 +41,7 @@ def test_to_asciidoc_with_nested_list(tmp_path):
         BeautifulSoup(xml, "xml").orderedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         . {empty}
         +
         --
@@ -53,5 +50,4 @@ def test_to_asciidoc_with_nested_list(tmp_path):
         .. {empty}
         +
         4 inputs that are available
-        --"""
-    )
+        --""")

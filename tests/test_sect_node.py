@@ -12,13 +12,11 @@ def test_sect_node(tmp_path):
 
     asciidoc = SectNode(BeautifulSoup(xml, "xml").sect1, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#foo]
         == Interrupt Numbers
 
-        Interrupts _are_ numbered as follows."""
-    )
+        Interrupts _are_ numbered as follows.""")
 
 
 def test_sect_node_with_attributes(tmp_path):
@@ -30,10 +28,8 @@ def test_sect_node_with_attributes(tmp_path):
 
     asciidoc = SectNode(BeautifulSoup(xml, "xml").sect1, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#foo,role=contextspecific,tag=PICO_2040,type=PICO_2040]
         == Interrupt Numbers
 
-        Interrupts _are_ numbered as follows."""
-    )
+        Interrupts _are_ numbered as follows.""")

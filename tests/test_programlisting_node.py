@@ -13,15 +13,13 @@ def test_programlisting_node_renders_as_a_verbatim_code_block(tmp_path):
         BeautifulSoup(xml, "xml").programlisting, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [source,c,linenums]
         ----
         2 * 2 = 4
 
         2 + 2 = 5
-        ----"""
-    )
+        ----""")
 
 
 def test_programlisting_node_includes_filename_as_comment_if_present(tmp_path):
@@ -33,11 +31,9 @@ def test_programlisting_node_includes_filename_as_comment_if_present(tmp_path):
         BeautifulSoup(xml, "xml").programlisting, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         // hello.c
         [source,c,linenums]
         ----
         print("Hello world")
-        ----"""
-    )
+        ----""")

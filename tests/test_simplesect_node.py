@@ -10,14 +10,12 @@ def test_simplesect_with_return_kind(tmp_path):
         BeautifulSoup(xml, "xml").simplesect, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         --
         *Returns*
 
         Clock frequency in _Hz_
-        --"""
-    )
+        --""")
 
 
 def test_simplesect_with_note_kind(tmp_path):
@@ -27,13 +25,11 @@ def test_simplesect_with_note_kind(tmp_path):
         BeautifulSoup(xml, "xml").simplesect, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [NOTE]
         ====
         This does _not_ work
-        ===="""
-    )
+        ====""")
 
 
 def test_two_sibling_simplesects_with_note_kind(tmp_path):
@@ -42,15 +38,13 @@ def test_two_sibling_simplesects_with_note_kind(tmp_path):
 
     asciidoc = Node(BeautifulSoup(xml, "xml").para, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [NOTE]
         ====
         This does _not_ work
 
         But this does
-        ===="""
-    )
+        ====""")
 
 
 def test_two_sibling_simplesects_with_see_kind(tmp_path):
@@ -63,16 +57,14 @@ def test_two_sibling_simplesects_with_see_kind(tmp_path):
 
     asciidoc = Node(BeautifulSoup(xml, "xml").para, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         --
         *See also*
 
         <<foo,foo()>>
 
         <<bar,bar()>>
-        --"""
-    )
+        --""")
 
 
 def test_simplesect_with_par_kind():
@@ -90,12 +82,10 @@ def test_simplesect_with_par_kind_and_paragraph():
 
     asciidoc = SimplesectNode(BeautifulSoup(xml, "xml").simplesect).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         *LwIP HTTP server*
 
-        Contents of the paragraph."""
-    )
+        Contents of the paragraph.""")
 
 
 def test_simplesect_with_par_kind_paragraph_and_no_title():
