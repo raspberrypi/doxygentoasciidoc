@@ -166,9 +166,9 @@ def test_page_node_with_indexpage(tmp_path):
 
         [[index_1md_2_users_2mudge_2_work_2raspberrypi_2databooks_2lib_2pico-sdk_2docs_2mainpage]]
 
-        The Raspberry Pi Pico SDK (Software Development Kit), henceforth SDK, provides the headers, libraries and build system necessary to write programs for RP-series microcontroller devices such as the Raspberry Pi Pico in C, C++ or assembly language. The SDK is designed to provide an API (Application Programming Interface) and programming environment that is familiar both to non-embedded C developers and embedded C developers alike.
+        The Raspberry Pi Pico SDK (Software Development Kit), henceforth SDK, provides the headers, libraries and build system necessary to write programs for RP-series microcontroller devices such as the Raspberry Pi Pico in C, {cpp} or assembly language. The SDK is designed to provide an API (Application Programming Interface) and programming environment that is familiar both to non-embedded C developers and embedded C developers alike.
 
-        A single program runs on the device at a time with a conventional `main()` method. Standard C/C++ libraries are supported along with APIs for accessing the microcontroller's hardware, including DMA, IRQs, and the wide variety of fixed-function peripherals and PIO (Programmable IO).
+        A single program runs on the device at a time with a conventional `main()` method. Standard C/{cpp} libraries are supported along with APIs for accessing the microcontroller's hardware, including DMA, IRQs, and the wide variety of fixed-function peripherals and PIO (Programmable IO).
 
         Additionally the SDK provides higher-level libraries for dealing with timers, USB, synchronization and multi-core programming, along with additional high-level functionality built using PIO, such as audio. The SDK can be used to build anything from simple applications, or full-fledged runtime environments such as MicroPython, to low-level software such as the microcontroller's on-chip bootrom itself.
 
@@ -186,7 +186,7 @@ def test_page_node_with_indexpage(tmp_path):
 
         The SDK uses CMake to manage the build. CMake is widely supported by IDEs (Integrated Development Environments), and allows a simple specification of the build (via `CMakeLists.txt` files), from which CMake can generate a build system (for use by `make`, `ninja` or other build tools) customized for the platform and by any configuration variables the developer chooses.
 
-        Apart from being a widely-used build system for C/C++ development, CMake is fundamental to the way the SDK is structured, and how applications are configured and built.
+        Apart from being a widely-used build system for C/{cpp} development, CMake is fundamental to the way the SDK is structured, and how applications are configured and built.
 
         The SDK builds an executable which is bare-metal, i.e. it includes the entirety of the code needed to run on the device (other than device specific floating-point and other optimized code contained in the bootrom within the microcontroller).
 

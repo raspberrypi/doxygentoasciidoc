@@ -52,8 +52,7 @@ def test_to_asciidoc_with_multiple_args(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_interp_config_1ga30d763b581c679c02cefe2fa90d8c8a7]
         ====== interp_config_set_shift
 
@@ -67,8 +66,7 @@ def test_to_asciidoc_with_multiple_args(tmp_path):
 
         [horizontal]
         `c`:: Pointer to an interpolator config
-        `shift`:: Number of bits"""
-    )
+        `shift`:: Number of bits""")
 
 
 def test_to_asciidoc_with_see_also(tmp_path):
@@ -111,8 +109,7 @@ def test_to_asciidoc_with_see_also(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_repeating_timer_1ga9ad5a07a3f2300cc9d46c1c847fae6f1]
         ====== cancel_repeating_timer
 
@@ -135,8 +132,7 @@ def test_to_asciidoc_with_see_also(tmp_path):
         *See also*
 
         <<group_alarm_1gaa593548569c182a0d65d2e06a9c3493b,alarm_id_t>> for a note on reuse of IDs
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_ref_in_type(tmp_path):
@@ -187,8 +183,7 @@ def test_to_asciidoc_with_ref_in_type(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_base_1ga625e737a57f12211cf1f634ca5095ae4]
         ====== hw_set_bits
 
@@ -200,5 +195,4 @@ def test_to_asciidoc_with_ref_in_type(tmp_path):
 
         [horizontal]
         `addr`:: Address of writable register
-        `mask`:: Bit-mask specifying bits to set"""
-    )
+        `mask`:: Bit-mask specifying bits to set""")

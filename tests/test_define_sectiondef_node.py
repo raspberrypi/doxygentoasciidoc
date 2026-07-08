@@ -89,8 +89,7 @@ def test_to_details_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").sectiondef, xmldir=tmp_path
     ).to_details_asciidoc(depth=4)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         ===== Macro Definition Documentation
 
         [#group_hardware_pio_1ga916d05e71da7f2173cd22b46bbfa0a11]
@@ -100,5 +99,4 @@ def test_to_details_asciidoc(tmp_path):
 
         Identifier for the first (PIO 0) hardware PIO instance (for use in PIO functions).
 
-        e.g. pio_gpio_init(pio0, 5)"""
-    )
+        e.g. pio_gpio_init(pio0, 5)""")

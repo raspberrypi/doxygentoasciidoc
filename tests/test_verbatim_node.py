@@ -13,11 +13,9 @@ __compiler_memory_barrier();
         BeautifulSoup(xml, "xml").verbatim, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [source,c]
         ----
         *some_memory_location = var_a;
         __compiler_memory_barrier();
-        ----"""
-    )
+        ----""")

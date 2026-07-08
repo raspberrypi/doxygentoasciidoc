@@ -6,7 +6,11 @@ def escape_text(text):
     return re.sub(
         r"\(\((.+)\)\)",
         r"\((\1))",
-        re.sub(r"\b(__\w+)", r"++\1++", str(text))
+        re.sub(
+            r"\b(__\w+)",
+            r"++\1++",
+            str(text).replace("C++", "{cpp}").replace("+", "{plus}"),
+        )
         .replace("*", "++*++")
         .replace(" \\\n", " ")
         .replace("->", "\\->"),

@@ -24,8 +24,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_pio_1ga916d05e71da7f2173cd22b46bbfa0a11]
         ====== pio0
 
@@ -33,8 +32,7 @@ def test_to_asciidoc(tmp_path):
 
         Identifier for the first (PIO 0) hardware PIO instance (for use in PIO functions).
 
-        e.g. pio_gpio_init(pio0, 5)"""
-    )
+        e.g. pio_gpio_init(pio0, 5)""")
 
 
 def test_to_asciidoc_with_no_initializer(tmp_path):
@@ -57,8 +55,7 @@ def test_to_asciidoc_with_no_initializer(tmp_path):
         BeautifulSoup(xml, "xml").memberdef, xmldir=tmp_path
     ).to_asciidoc(depth=5)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware_pio_1ga923a261ba19804c404900228e99c9522]
         ====== pio1
 
@@ -66,8 +63,7 @@ def test_to_asciidoc_with_no_initializer(tmp_path):
 
         Identifier for the second (PIO 1) hardware PIO instance (for use in PIO functions).
 
-        e.g. pio_gpio_init(pio1, 5)"""
-    )
+        e.g. pio_gpio_init(pio1, 5)""")
 
 
 def test_to_asciidoc_with_multiline_initializer(tmp_path):

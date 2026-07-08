@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import ListitemNode
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -12,18 +12,16 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").listitem, xmldir=tmp_path
     ).to_asciidoc(unordereddepth=1)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
         Item the first
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_when_nested(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -31,16 +29,14 @@ def test_to_asciidoc_when_nested(tmp_path):
         BeautifulSoup(xml, "xml").listitem, xmldir=tmp_path
     ).to_asciidoc(unordereddepth=2)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         ** {empty}
         +
-        Item the first"""
-    )
+        Item the first""")
 
 
 def test_block_separator_at_top_level(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 
@@ -52,7 +48,7 @@ def test_block_separator_at_top_level(tmp_path):
 
 
 def test_block_separator_when_nested(tmp_path):
-    xml = """
+    xml = """\
     <listitem><para>Item the first</para>
     </listitem>"""
 

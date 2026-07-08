@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import TableNode
 
 
 def test_table_node_renders_tables(tmp_path):
-    xml = """
+    xml = """\
     <table><row>
     <entry thead="yes"><para>IRQ   </para>
     </entry><entry thead="yes"><para>Interrupt Source    </para>
@@ -18,12 +18,10 @@ def test_table_node_renders_tables(tmp_path):
 
     asciidoc = TableNode(BeautifulSoup(xml, "xml").table, xmldir=tmp_path).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         |===
         |IRQ |Interrupt Source
 
         |0
         |TIMER_IRQ_0
-        |==="""
-    )
+        |===""")

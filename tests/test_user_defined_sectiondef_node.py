@@ -27,8 +27,7 @@ def test_to_asciidoc():
         BeautifulSoup(xml, "xml").sectiondef
     ).to_asciidoc(depth=4)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         ===== Authorization types
 
         Used when setting up an access point, or connecting to an access point [[group_cyw43_ll_1CYW43_AUTH_]]
@@ -38,5 +37,4 @@ def test_to_asciidoc():
 
         [.memname]`#define CYW43_AUTH_OPEN (0)`
 
-        No authorisation required (open)"""
-    )
+        No authorisation required (open)""")

@@ -5,8 +5,7 @@ from doxygentoasciidoc.nodes import DoxygenindexNode
 
 def test_to_asciidoc(tmp_path):
     with open(f"{tmp_path}/group__hardware.xml", "w", encoding="utf-8") as hardware:
-        hardware.write(
-            """\
+        hardware.write("""\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__hardware" kind="group">
@@ -20,13 +19,11 @@ def test_to_asciidoc(tmp_path):
     </detaileddescription>
   </compounddef>
 </doxygen>
-            """
-        )
+            """)
     with open(
         f"{tmp_path}/group__hardware__base.xml", "w", encoding="utf-8"
     ) as hardware_base:
-        hardware_base.write(
-            """\
+        hardware_base.write("""\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__hardware__base" kind="group">
@@ -42,13 +39,11 @@ def test_to_asciidoc(tmp_path):
     </detaileddescription>
   </compounddef>
 </doxygen>
-            """
-        )
+            """)
     with open(
         f"{tmp_path}/group__channel__config.xml", "w", encoding="utf-8"
     ) as channel_config:
-        channel_config.write(
-            """\
+        channel_config.write("""\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__channel__config" kind="group">
@@ -61,13 +56,11 @@ def test_to_asciidoc(tmp_path):
     </detaileddescription>
   </compoundef>
 </doxygen>
-            """
-        )
+            """)
     with open(
         f"{tmp_path}/group__sm__config.xml", "w", encoding="utf-8"
     ) as channel_config:
-        channel_config.write(
-            """\
+        channel_config.write("""\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="group__sm__config" kind="group">
@@ -80,8 +73,7 @@ def test_to_asciidoc(tmp_path):
     </detaileddescription>
   </compoundef>
 </doxygen>
-            """
-        )
+            """)
     xml = """\
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.9.7" xml:lang="en-US">
@@ -100,8 +92,7 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").doxygenindex, xmldir=tmp_path
     ).to_asciidoc(depth=2)
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         [#group_hardware,reftext="Hardware APIs"]
         === Hardware APIs
 
@@ -141,5 +132,4 @@ def test_to_asciidoc(tmp_path):
         [#group_sm_config,reftext="sm_config"]
         ===== sm_config
 
-        PIO state machine configuration."""
-    )
+        PIO state machine configuration.""")

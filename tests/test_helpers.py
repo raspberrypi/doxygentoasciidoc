@@ -25,6 +25,21 @@ def test_escape_text_does_not_escape_unbalanced_double_parentheses():
     assert escape_text("((hello)-1)") == "((hello)-1)"
 
 
+def test_escape_text_escapes_c_plus_plus():
+    assert escape_text("C++") == "{cpp}"
+
+
+def test_escape_text_escapes_plus():
+    assert escape_text("+") == "{plus}"
+
+
+def test_escape_text_escapes_c_plus_plus_and_multiple_underscores():
+    assert (
+        escape_text("C/C++ __thread/thread_local support.")
+        == "C/{cpp} ++__thread++/thread_local support."
+    )
+
+
 def test_escape_text_escapes_arrows():
     assert escape_text("->") == "\\->"
 

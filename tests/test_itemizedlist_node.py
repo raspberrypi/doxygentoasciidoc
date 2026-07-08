@@ -4,7 +4,7 @@ from doxygentoasciidoc.nodes import ItemizedlistNode
 
 
 def test_to_asciidoc(tmp_path):
-    xml = """
+    xml = """\
     <itemizedlist>
     <listitem><para>Item the first</para>
     </listitem></itemizedlist>"""
@@ -13,18 +13,16 @@ def test_to_asciidoc(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
         Item the first
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_nested_list(tmp_path):
-    xml = """
+    xml = """\
     <itemizedlist>
     <listitem><para>5 input mux:<itemizedlist>
     <listitem><para>4 inputs that are available</para>
@@ -36,8 +34,7 @@ def test_to_asciidoc_with_nested_list(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
@@ -46,12 +43,11 @@ def test_to_asciidoc_with_nested_list(tmp_path):
         ** {empty}
         +
         4 inputs that are available
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_mixed_nested_list(tmp_path):
-    xml = """
+    xml = """\
     <itemizedlist>
     <listitem><para>5 input mux:<orderedlist>
     <listitem><para>4 inputs that are available</para>
@@ -63,8 +59,7 @@ def test_to_asciidoc_with_mixed_nested_list(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
@@ -73,8 +68,7 @@ def test_to_asciidoc_with_mixed_nested_list(tmp_path):
         . {empty}
         +
         4 inputs that are available
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_multiple_paras_in_a_list(tmp_path):
@@ -90,16 +84,14 @@ def test_to_asciidoc_with_multiple_paras_in_a_list(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
         List:
 
         This paragraph
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_multiple_paras_in_a_nested_list(tmp_path):
@@ -126,8 +118,7 @@ def test_to_asciidoc_with_multiple_paras_in_a_nested_list(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
@@ -144,8 +135,7 @@ def test_to_asciidoc_with_multiple_paras_in_a_nested_list(tmp_path):
         +
         --
         2
-        --"""
-    )
+        --""")
 
 
 def test_to_asciidoc_with_para_after_nested_list(tmp_path):
@@ -169,8 +159,7 @@ def test_to_asciidoc_with_para_after_nested_list(tmp_path):
         BeautifulSoup(xml, "xml").itemizedlist, xmldir=tmp_path
     ).to_asciidoc()
 
-    assert asciidoc == dedent(
-        """\
+    assert asciidoc == dedent("""\
         * {empty}
         +
         --
@@ -181,5 +170,4 @@ def test_to_asciidoc_with_para_after_nested_list(tmp_path):
         1
 
         After
-        --"""
-    )
+        --""")
